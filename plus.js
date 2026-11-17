@@ -699,7 +699,53 @@ function videosVue() {
   filtrer();
 }
 
-Object.assign(ROUTES, {'tableau-de-bord': tableau, revision, cartes, examen, certificats, videos: videosVue});
+/* ══════════ EXCEL : tous les ateliers, la progression et les compétences ══════════ */
+function excelVue() {
+  let comp = '', aFaire = false;
+  const cles = Object.keys(XL).sort((a, b) => XL[a].n - XL[b].n);
+  const groupes = NIVEAUX.map(N => ({id: 'n' + N.n, t: 'Niveau ' + N.n + ' · ' + N.t, s: N.s, K: xlDe(N.n).sort((a, b) => XL[a].n - XL[b].n), niv: N.n}))
+    .concat([{id: 'syn', t: 'Cas de synthèse', s: 'Le dossier Atelier Lumen', K: xlDe('syn').sort((a, b) => XL[a].n - XL[b].n), niv: 'syn'}]);
+  const FAM = [['Formules et recopie', ['Formules', 'Recopie', 'Recopie de formule', 'Recopie sur 60 lignes', 'Formules en cascade', 'Références relatives en chaîne']], ['SOMME', ['SOMME', 'Alt + =']], ['SI', ['SI']], ['NB.SI', ['NB.SI']],
+    ['SOMME.SI', ['SOMME.SI', 'SOMME.SI.ENS', 'SOMME.SI avec texte', 'SOMME.SI avec joker *', 'SOMME.SI avec joker', 'SOMME.SI.ENS à plusieurs critères']],
+    ['RECHERCHEV, INDEX', ['RECHERCHEV', 'INDEX et EQUIV']], ['ARRONDI', ['ARRONDI']], ['MIN, MAX', ['MAX', 'MIN et MAX']], ['SIERREUR', ['SIERREUR']],
+    ['Dates', ['Dates', 'FIN.MOIS', 'JOURS360', 'ANNEE et MOIS', 'Format date']], ['Fonctions financières', ['AMORLIN', 'VPM', 'CUMUL.INTER']],
+    ['Références $ et 3D', ['Référence absolue $', 'Plages figées $', 'Références 3D', 'Plusieurs feuilles']], ['Tableau croisé dynamique', ['Tableau croisé dynamique']],
+    ['Graphiques', ['Graphique en courbes', 'Graphique en cascade', 'Graphique combiné']],
+    ['Mise en forme', ['Format monétaire', 'Formats % et €', 'Mise en forme conditionnelle', 'Barres de données', 'Pourcentage', 'Pourcentages']],
+    ['Listes, tris et filtres', ['Filtres', 'Tri', 'Validation des données', 'GAUCHE']]];
+  const famille = Object.fromEntries(FAM);
+  const lecon = k => MODULES.find(m => m.id === (XL[k].mod || k));
+  const jauge = (f, t) => `<div class="jauge"><i style="width:${t ? 100 * f / t : 0}%"></i></div>`;
+  V.innerHTML = `<h1 class="titre">Excel</h1>
+  <p class="sous">${cles.length} ateliers pour progresser sur Excel en même temps qu'en comptabilité. Chacun propose deux tutos courts, un classeur d'exercice à télécharger, un défi vérifié ici et un corrigé. Ouvrez un atelier pour le faire sans quitter cette page.</p>
+  <div class="stats" id="xs-stats"></div>
+  <div class="filtres"><div class="seg xs-comp" role="group" aria-label="Filtrer par compétence"><button type="button" data-c="" aria-pressed="true">Toutes les compétences</button>${FAM.map(([c]) => `<button type="button" data-c="${esc(c)}" aria-pressed="false">${esc(c)}</button>`).join('')}</div></div>
+  <label class="vf-nv" style="margin-bottom:8px"><input type="checkbox" id="xs-af"> Seulement les ateliers à faire</label>
+  <div id="xs-liste">${groupes.map(g => `<section class="vf-niv" data-g="${g.id}"><div class="niv-h"><span class="num">${g.t}</span><h2>${g.s}</h2><p class="xs-prog"></p></div>${g.K.map(k => { const x = XL[k], m = lecon(k); return `<details class="xl-ligne" data-k="${k}"><summary><span class="xl-ico" aria-hidden="true">${x.n}</span><span class="xs-txt"><b>${esc(x.t)}</b><small>Leçon : ${esc(m.t)} · ${x.min} min</small><span class="xl-comp">${x.comp.map(c => `<span>${esc(c)}</span>`).join('')}</span></span><span class="xs-etat"></span></summary><div class="xs-corps"><p class="xs-lien"><a href="#${m.id}">Voir l'atelier dans sa leçon « ${esc(m.t)} »</a></p></div></details>`; }).join('')}</section>`).join('')}</div>
+  <p class="vf-vide" hidden>Aucun atelier ne correspond. Choisissez une autre compétence ou décochez « à faire ».</p>`;
+  const maj = () => {
+    $('#xs-stats').innerHTML = [['Ateliers réussis', xlFaits() + ' / ' + cles.length, jauge(xlFaits(), cles.length)]]
+      .concat(groupes.map(g => [g.t.replace(/^Niveau \d · /, ''), xlFaits(g.niv) + ' / ' + g.K.length, jauge(xlFaits(g.niv), g.K.length)]))
+      .map(([l, v, j]) => `<div class="verre stat"><small>${l}</small><b>${v}</b>${j}</div>`).join('');
+    $$('.xl-ligne', V).forEach(d => { const ok = !!S.xl[d.dataset.k]; d.classList.toggle('fait', ok); $('.xs-etat', d).innerHTML = ok ? '<span class="pill ok">Réussi</span>' : '<span class="pill">À faire</span>'; });
+    groupes.forEach(g => { const s = $(`[data-g="${g.id}"] .xs-prog`, V); s.textContent = xlFaits(g.niv) + ' sur ' + g.K.length + ' réussi' + (xlFaits(g.niv) > 1 ? 's' : ''); });
+  };
+  const filtrer = () => {
+    let n = 0;
+    $$('.xl-ligne', V).forEach(d => { const x = XL[d.dataset.k], ok = (!comp || x.comp.some(c => famille[comp].includes(c))) && (!aFaire || !S.xl[d.dataset.k]); d.hidden = !ok; if (ok) n++; });
+    $$('.vf-niv', V).forEach(s => { s.hidden = !$$('.xl-ligne', s).some(d => !d.hidden); });
+    $('.vf-vide', V).hidden = n > 0;
+  };
+  $$('.xl-ligne', V).forEach(d => d.addEventListener('toggle', () => {
+    if (d.open && !$('.xl', d)) $('.xs-corps', d).prepend(carteXL(d.dataset.k));
+  }));
+  $$('.xs-comp button', V).forEach(b => b.addEventListener('click', () => { comp = b.dataset.c; $$('.xs-comp button', V).forEach(x => x.setAttribute('aria-pressed', x === b)); filtrer(); }));
+  $('#xs-af').addEventListener('change', e => { aFaire = e.target.checked; filtrer(); });
+  V.addEventListener('submit', () => setTimeout(maj, 150));
+  maj(); filtrer();
+}
+
+Object.assign(ROUTES, {'tableau-de-bord': tableau, revision, cartes, examen, certificats, videos: videosVue, excel: excelVue});
 Object.assign(A.NAV, {revision: 'entrainement', cartes: 'entrainement', examen: 'entrainement', certificats: 'tableau-de-bord'});
 $('#theme').addEventListener('click', () => { S.theme = S.theme === 'clair' ? 'sombre' : 'clair'; save(); theme(); });
 theme();
