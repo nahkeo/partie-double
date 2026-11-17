@@ -129,7 +129,8 @@ const BADGES = [
   ['curieux', '?', 'Curieux', 'Poser une question à l\'assistant', () => S.flags.curieux],
   ['xl1', 'X', 'Premier classeur', 'Réussir un atelier Excel', () => Object.keys(S.xl || {}).length >= 1],
   ['xl4', 'XL', 'Excel débutant', 'Réussir les ateliers Excel du niveau Débutant', () => xlFaits(1) >= xlTotal(1)],
-  ['xl8', 'XL+', 'Excel intermédiaire', 'Réussir les ateliers Excel du niveau Intermédiaire', () => xlFaits(2) >= xlTotal(2)]
+  ['xl8', 'XL+', 'Excel intermédiaire', 'Réussir les ateliers Excel du niveau Intermédiaire', () => xlFaits(2) >= xlTotal(2)],
+  ['xl12', 'XL³', 'Excel avancé', 'Réussir les ateliers Excel du niveau Avancé', () => xlFaits(3) >= xlTotal(3)]
 ];
 function toast(t) {
   const Z = $('#toasts'), el = h(`<div class="toast">${esc(t)}</div>`);
@@ -281,7 +282,27 @@ const XL = {
   obj: 'Calculez les cotisations, le net à payer et le coût employeur de six salariés, en allant chercher les taux de chaque statut dans une table.',
   comp: ['RECHERCHEV', 'ARRONDI', 'Table de paramètres'],
   v: [['tAlnUOLJNHA', 'Tu connais la fonction RECHERCHEV ?', 'La minute Excel', '4:16'], ['f6tkMn3i-TA', 'RECHERCHEV : deux démonstrations simples', 'David Montet - Excel Solutions', '3:20']],
-  d: [['Total des nets à payer (H11)', 11906.6, '€'], ['Coût total employeur (J13)', 22260, '€']]}
+  d: [['Total des nets à payer (H11)', 11906.6, '€'], ['Coût total employeur (J13)', 22260, '€']]},
+'m-amortissements': {niv: 3, n: 9, etape: 1, t: 'Les dotations aux amortissements avec AMORLIN', min: 20,
+  obj: 'Calculez la dotation 2026 de cinq immobilisations mises en service en cours d\'année, au prorata temporis, et leur valeur nette comptable au 31 décembre.',
+  comp: ['AMORLIN', 'JOURS360', 'Dates', 'ARRONDI'],
+  v: [['kGwYzwNPg40', 'Calculer l\'amortissement linéaire avec AMORLIN', 'BricolExcel', '1:36'], ['qUG2RHeifjY', 'La fonction JOURS360', 'Excel x Solpedinn', '1:10']],
+  d: [['Total des dotations 2026 (G11)', 8280, '€'], ['Valeur nette comptable de la machine (H6)', 20400, '€']]},
+'m-regularisations': {niv: 3, n: 10, etape: 1, t: 'Les charges constatées d\'avance avec FIN.MOIS', min: 20,
+  obj: 'Pour six factures à cheval sur deux exercices, calculez automatiquement la part qui concerne 2027 et la charge réelle de 2026.',
+  comp: ['FIN.MOIS', 'ANNEE et MOIS', 'MAX', 'Format date'],
+  v: [['OjP4iuvs1f8', 'La fonction FIN.MOIS', 'Excel x Solpedinn', '1:15'], ['avWW_HFjfB4', 'Calculer la durée entre deux dates', 'La minute Excel', '5:57']],
+  d: [['Total des charges constatées d\'avance (H12)', 5840, '€'], ['Total des charges de l\'exercice 2026 (I12)', 5260, '€']]},
+'m-stocks': {niv: 3, n: 11, etape: 2, t: 'La fiche de stock au coût moyen pondéré', min: 20,
+  obj: 'Tenez la fiche de stock des modules LED : quantité, valeur et coût moyen recalculés après chaque entrée, coût des sorties, puis un graphique.',
+  comp: ['Références relatives en chaîne', 'SI', 'Graphique en courbes'],
+  v: [['5lpBEDofEWs', 'Les fiches de stocks : le CMUP après chaque entrée', '5 minutes pour réussir', '5:02'], ['5vsE7Yez_gI', 'Créer un graphique en courbes', 'excelcorpo', '3:43']],
+  d: [['Valeur du stock final (G10)', 1000, '€'], ['Coût total des sorties (I11)', 6875, '€']]},
+'m-emprunts': {niv: 3, n: 12, etape: 1, t: 'Le tableau d\'emprunt avec VPM', min: 25,
+  obj: 'Construisez le tableau de remboursement d\'un emprunt de 50 000 € à 4 % sur 5 ans, séparez intérêts et capital, et contrôlez les intérêts de la première année.',
+  comp: ['VPM', 'CUMUL.INTER', 'Recopie sur 60 lignes'],
+  v: [['9gs1AKmmym0', 'Tu connais la fonction VPM ?', 'La minute Excel', '2:18'], ['z1xA-TGQcXI', 'Tu connais la fonction CUMUL.INTER ?', 'La minute Excel', '3:12']],
+  d: [['Mensualité, au centime (B7)', 920.83, '€'], ['Intérêts de la première année (B8)', 1832.23, '€', .02]]}
 };
 const NBXL = Object.keys(XL).length;
 const CHEZ_NOUS = /(^|\.)nahkeo\.fr$|github\.io$|^localhost$|^127\.0\.0\.1$/.test(location.hostname);
@@ -372,7 +393,7 @@ function tableau() {
     ${stat('Série', serie() + ' j', 'jours consécutifs')}
     ${stat('Temps d\'étude', mn >= 60 ? Math.floor(mn / 60) + ' h ' + String(mn % 60).padStart(2, '0') : mn + ' min', 'temps actif cumulé')}
     ${stat('Modules validés', nm + ' / ' + MODULES.length, '')}
-    ${stat('Ateliers Excel', xlFaits() + ' / ' + NBXL, 'Débutant ' + xlFaits(1) + '/' + xlTotal(1) + ' · Intermédiaire ' + xlFaits(2) + '/' + xlTotal(2))}
+    ${stat('Ateliers Excel', xlFaits() + ' / ' + NBXL, [1, 2, 3].map(nv => NIVEAUX[nv - 1].t + ' ' + xlFaits(nv) + '/' + xlTotal(nv)).join(' · '))}
     ${stat('Score moyen', scoreMoyen() === null ? '–' : scoreMoyen() + ' %', 'réussite du premier coup')}
     ${(() => { const N = NIVEAUX.find(x => !(S.exam[x.n] && S.exam[x.n].ok)); if (!N) return stat('Certifications', '4 / 4', 'toutes obtenues'); const M = MODULES.filter(m => m.niv === N.n), p = Math.round(100 * sum(M, faits) / sum(M, m => m.ex.length)); return stat('Prochaine certification', N.t, p + ' % du niveau fait · <a href="#examen">examen</a>'); })()}
     ${stat('Dernière activité', S.dern ? new Date(S.dern.t).toLocaleDateString('fr-FR', {day: 'numeric', month: 'short'}) : '–', S.dern ? esc(S.dern.q) : 'Rien pour l\'instant')}

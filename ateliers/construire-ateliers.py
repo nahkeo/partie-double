@@ -535,6 +535,229 @@ def atelier8(corrige):
     return wb, {'net': tot_net, 'cout': cout}
 
 
+# ═══════════════════════ NIVEAU AVANCÉ ═══════════════════════
+import datetime as dt
+from openpyxl.chart import LineChart, Reference
+
+CLOTURE = dt.date(2026, 12, 31)
+DATE = 'DD/MM/YYYY'
+
+
+def consignes_a(wb, *a):
+    consignes(wb, *a)
+    wb.active['A2'] = 'Partie Double · atelier Excel · niveau Avancé'
+
+
+def jours360(d1, d2):
+    """JOURS360 d'Excel, méthode américaine (par défaut)."""
+    j1, j2 = d1.day, d2.day
+    if j1 == 31:
+        j1 = 30
+    if j2 == 31 and j1 >= 30:
+        j2 = 30
+    elif j2 == 31:
+        return 360 * (d2.year - d1.year) + 30 * (d2.month + 1 - d1.month) + (1 - j1)
+    return 360 * (d2.year - d1.year) + 30 * (d2.month - d1.month) + (j2 - j1)
+
+
+def cloture(ws):
+    case(ws['A3'], 'Date de clôture', gras=True)
+    x = case(ws['B3'], CLOTURE, gras=True)
+    x.number_format = DATE
+
+
+# ─────────────── Atelier 9 : plan d'amortissement avec AMORLIN et JOURS360 ───────────────
+IMMOS = [('Machine de découpe laser', dt.date(2026, 4, 1), 24000, 5), ('Camionnette de livraison', dt.date(2026, 7, 1), 22000, 5),
+         ('Ordinateurs de l\'atelier', dt.date(2026, 10, 1), 3600, 3), ('Mobilier du showroom', dt.date(2026, 1, 1), 6000, 10),
+         ('Four de cuisson du verre', dt.date(2026, 2, 15), 14400, 8)]
+
+
+def atelier9(corrige):
+    wb = Workbook()
+    consignes_a(wb, 'Atelier 9 · Les dotations aux amortissements avec AMORLIN',
+                'Calculer la dotation 2026 de cinq immobilisations mises en service en cours d\'année, au prorata temporis, et leur valeur nette comptable au 31 décembre.',
+                ['Ouvrez la feuille « Exercice ». La date de clôture est en B3 ; les immobilisations en lignes 6 à 10.',
+                 'En E6, l\'annuité complète : =AMORLIN(C6;0;D6). Le 0 est la valeur résiduelle : le bien est amorti en totalité.',
+                 'En F6, le nombre de jours d\'utilisation en 2026, en année de 360 jours : =JOURS360(B6;$B$3).',
+                 'En G6, la dotation 2026 : =ARRONDI(E6*F6/360;2). En H6, la valeur nette comptable : =C6-G6.',
+                 'Recopiez E6:H6 jusqu\'à la ligne 10, puis faites les totaux de la ligne 11.',
+                 'Vérifiez à la main un cas : la machine, mise en service le 1er avril, doit compter 270 jours, soit 9 mois.'],
+                ['Total des dotations 2026 (G11)', 'Valeur nette comptable de la machine de découpe laser (H6)'],
+                'JOURS360 compte 30 jours par mois, comme le veut l\'usage pour le prorata d\'amortissement. Une mise en service le 15 février donne 316 jours.')
+    ws = wb.create_sheet('Exercice')
+    titre(ws, 'Dotations aux amortissements 2026', 'Atelier de Vania · amortissement linéaire, prorata temporis')
+    cloture(ws)
+    entete(ws, 5, ['Immobilisation', 'Mise en service', 'Valeur HT', 'Durée (ans)', 'Annuité', 'Jours en 2026', 'Dotation 2026', 'VNC au 31/12'])
+    total = 0
+    for i, (n_, d, v, du) in enumerate(IMMOS):
+        r = 6 + i
+        case(ws.cell(row=r, column=1), n_)
+        x = case(ws.cell(row=r, column=2), d); x.number_format = DATE
+        case(ws.cell(row=r, column=3), v, euro=True); case(ws.cell(row=r, column=4), du)
+        f = {5: f'=SLN(C{r},0,D{r})', 6: f'=DAYS360(B{r},$B$3)', 7: f'=ROUND(E{r}*F{r}/360,2)', 8: f'=C{r}-G{r}'}
+        for col, form in f.items():
+            case(ws.cell(row=r, column=col), form if corrige else None, a_remplir=True, euro=col != 6)
+        total += arr(v / du * jours360(d, CLOTURE) / 360)
+    case(ws['A11'], 'Totaux', gras=True)
+    for col in 'CGH':
+        case(ws[f'{col}11'], f'=SUM({col}6:{col}10)' if corrige else None, a_remplir=col != 'C' or True, euro=True, gras=True)
+    largeurs(ws, {'A': 30, 'B': 16, 'C': 14, 'D': 12, 'E': 13, 'F': 14, 'G': 15, 'H': 15})
+    vnc = IMMOS[0][2] - arr(IMMOS[0][2] / IMMOS[0][3] * jours360(IMMOS[0][1], CLOTURE) / 360)
+    if corrige:
+        ws['A13'] = f'Corrigé : dotations 2026 = {total:.2f} € · VNC de la machine = {vnc:.2f} €.'.replace('.', ',')
+        ws['A13'].font = Font(italic=True, color=VERT)
+    wb.active = 1
+    return wb, {'dotations': arr(total), 'vnc_machine': vnc}
+
+
+# ─────────────── Atelier 10 : charges constatées d'avance avec FIN.MOIS ───────────────
+CHARGES_AV = [('Assurance multirisque', '616', dt.date(2026, 10, 1), 12, 1200), ('Loyer du trimestre', '6132', dt.date(2026, 12, 1), 3, 3000),
+              ('Abonnement au logiciel de gestion', '6135', dt.date(2026, 3, 1), 12, 1440), ('Contrat de maintenance du four', '615', dt.date(2026, 7, 1), 12, 1800),
+              ('Annonce dans l\'annuaire', '623', dt.date(2026, 1, 1), 12, 960), ('Location d\'un utilitaire', '6135', dt.date(2026, 11, 1), 6, 2700)]
+
+
+def fin_mois(d, n):
+    y, m = d.year + (d.month - 1 + n) // 12, (d.month - 1 + n) % 12 + 1
+    nxt = dt.date(y + (m == 12), m % 12 + 1, 1)
+    return nxt - dt.timedelta(days=1)
+
+
+def atelier10(corrige):
+    wb = Workbook()
+    consignes_a(wb, 'Atelier 10 · Les charges constatées d\'avance avec FIN.MOIS',
+                'Pour six factures qui couvrent une période à cheval sur deux exercices, calculer automatiquement la part qui concerne 2027 et la charge réelle de 2026.',
+                ['Ouvrez la feuille « Exercice ». Chaque facture couvre une période qui commence le 1er du mois indiqué, pour une durée en mois.',
+                 'En F6, la date de fin de période : =FIN.MOIS(C6;D6-1). La fonction renvoie le dernier jour du mois, D6-1 mois plus tard.',
+                 'En G6, le nombre de mois qui tombent après la clôture : =MAX(0;(ANNEE(F6)-ANNEE($B$3))*12+MOIS(F6)-MOIS($B$3)).',
+                 'En H6, la charge constatée d\'avance : =ARRONDI(E6*G6/D6;2). En I6, la charge de 2026 : =E6-H6.',
+                 'Recopiez F6:I6 jusqu\'à la ligne 11, puis faites les totaux de la ligne 12.',
+                 'Pensez à l\'écriture : débit 486 Charges constatées d\'avance, crédit de chaque compte de charge.'],
+                ['Total des charges constatées d\'avance (H12)', 'Total des charges de l\'exercice 2026 (I12)'],
+                'Si la colonne F affiche un nombre comme 46295, c\'est une date : appliquez le format Date courte (Accueil > Nombre).')
+    ws = wb.create_sheet('Exercice')
+    titre(ws, 'Charges constatées d\'avance au 31 décembre 2026', 'Atelier de Vania · montants hors taxes')
+    cloture(ws)
+    entete(ws, 5, ['Facture', 'Compte', 'Début de période', 'Durée (mois)', 'Montant HT', 'Fin de période', 'Mois sur 2027', 'Charge constatée d\'avance', 'Charge 2026'])
+    tot_cca = 0
+    for i, (n_, cpt, d, du, m) in enumerate(CHARGES_AV):
+        r = 6 + i
+        case(ws.cell(row=r, column=1), n_)
+        x = case(ws.cell(row=r, column=2), cpt); x.number_format = '@'
+        x = case(ws.cell(row=r, column=3), d); x.number_format = DATE
+        case(ws.cell(row=r, column=4), du); case(ws.cell(row=r, column=5), m, euro=True)
+        x = case(ws.cell(row=r, column=6), f'=EOMONTH(C{r},D{r}-1)' if corrige else None, a_remplir=True); x.number_format = DATE
+        case(ws.cell(row=r, column=7), f'=MAX(0,(YEAR(F{r})-YEAR($B$3))*12+MONTH(F{r})-MONTH($B$3))' if corrige else None, a_remplir=True)
+        case(ws.cell(row=r, column=8), f'=ROUND(E{r}*G{r}/D{r},2)' if corrige else None, a_remplir=True, euro=True)
+        case(ws.cell(row=r, column=9), f'=E{r}-H{r}' if corrige else None, a_remplir=True, euro=True)
+        f = fin_mois(d, du - 1)
+        mois = max(0, (f.year - CLOTURE.year) * 12 + f.month - CLOTURE.month)
+        tot_cca += arr(m * mois / du)
+    case(ws['A12'], 'Totaux', gras=True)
+    for col in 'EHI':
+        case(ws[f'{col}12'], f'=SUM({col}6:{col}11)' if corrige else None, a_remplir=True, euro=True, gras=True)
+    largeurs(ws, {'A': 34, 'B': 9, 'C': 16, 'D': 13, 'E': 13, 'F': 15, 'G': 14, 'H': 24, 'I': 14})
+    tot_m = sum(x[4] for x in CHARGES_AV)
+    if corrige:
+        ws['A14'] = f'Corrigé : charges constatées d\'avance {tot_cca:.2f} € · charges 2026 {tot_m - tot_cca:.2f} €.'.replace('.', ',')
+        ws['A14'].font = Font(italic=True, color=VERT)
+    wb.active = 1
+    return wb, {'cca': arr(tot_cca), 'charges_2026': arr(tot_m - tot_cca)}
+
+
+# ─────────────── Atelier 11 : fiche de stock au coût moyen pondéré ───────────────
+STOCK_INIT = (100, 10.0)
+MOUVEMENTS = [('05/03', 'Achat fournisseur Lumix', 300, 12.00, None), ('10/03', 'Sortie vers l\'atelier', None, None, 250),
+              ('18/03', 'Achat fournisseur Lumix', 250, 13.10, None), ('25/03', 'Sortie vers l\'atelier', None, None, 320)]
+
+
+def atelier11(corrige):
+    wb = Workbook()
+    consignes_a(wb, 'Atelier 11 · La fiche de stock au coût moyen pondéré',
+                'Tenir la fiche de stock des modules LED : quantité, valeur et coût moyen recalculés après chaque entrée, coût des sorties, puis un graphique de l\'évolution du stock.',
+                ['Ouvrez la feuille « Exercice ». La ligne 6 contient le stock initial (100 modules à 10 €). Chaque ligne suivante est une entrée ou une sortie.',
+                 'En F7, la quantité en stock : =F6+C7-E7. Les cellules vides comptent pour 0.',
+                 'En G7, la valeur du stock : =G6+C7*D7-E7*H6. Une sortie est valorisée au coût moyen de la ligne précédente.',
+                 'En H7, le coût moyen pondéré : =SI(F7=0;0;G7/F7). En I7, le coût de la sortie : =E7*H6.',
+                 'Recopiez F7:I7 jusqu\'à la ligne 10, puis faites le total des coûts de sortie en I11.',
+                 'Bonus : sélectionnez A6:A10 et F6:F10, puis Insertion > Graphique en courbes pour voir l\'évolution du stock.'],
+                ['Valeur du stock final (G10)', 'Coût total des sorties (I11)'],
+                'Le coût moyen ne change qu\'à une entrée : une sortie retire des unités au coût moyen du moment, sans le modifier.')
+    ws = wb.create_sheet('Exercice')
+    titre(ws, 'Fiche de stock · modules LED, mars', 'Atelier de Vania · coût moyen unitaire pondéré après chaque entrée')
+    entete(ws, 5, ['Date', 'Opération', 'Entrée qté', 'Entrée PU', 'Sortie qté', 'Stock qté', 'Stock valeur', 'Coût moyen', 'Coût de la sortie'])
+    q, v = STOCK_INIT[0], STOCK_INIT[0] * STOCK_INIT[1]
+    case(ws['A6'], '01/03'); case(ws['B6'], 'Stock initial')
+    case(ws['F6'], q); case(ws['G6'], v, euro=True); case(ws['H6'], STOCK_INIT[1], euro=True)
+    cmup, sorties = STOCK_INIT[1], 0
+    for i, (d, o, eq, pu, sq) in enumerate(MOUVEMENTS):
+        r = 7 + i
+        case(ws.cell(row=r, column=1), d); case(ws.cell(row=r, column=2), o)
+        case(ws.cell(row=r, column=3), eq); case(ws.cell(row=r, column=4), pu, euro=pu is not None); case(ws.cell(row=r, column=5), sq)
+        f = {6: f'=F{r-1}+C{r}-E{r}', 7: f'=G{r-1}+C{r}*D{r}-E{r}*H{r-1}', 8: f'=IF(F{r}=0,0,G{r}/F{r})', 9: f'=E{r}*H{r-1}'}
+        for col, form in f.items():
+            case(ws.cell(row=r, column=col), form if corrige else None, a_remplir=True, euro=col != 6)
+        eq, pu, sq = eq or 0, pu or 0, sq or 0
+        sorties += sq * cmup
+        q, v = q + eq - sq, v + eq * pu - sq * cmup
+        cmup = v / q if q else 0
+    case(ws['H11'], 'Total', gras=True)
+    case(ws['I11'], '=SUM(I7:I10)' if corrige else None, a_remplir=True, euro=True, gras=True)
+    largeurs(ws, {'A': 8, 'B': 26, 'C': 11, 'D': 11, 'E': 11, 'F': 11, 'G': 13, 'H': 12, 'I': 16})
+    if corrige:
+        g = LineChart(); g.title = 'Quantité en stock'; g.y_axis.title = 'Modules'; g.height, g.width = 7, 14
+        g.add_data(Reference(ws, min_col=6, min_row=5, max_row=10), titles_from_data=True)
+        g.set_categories(Reference(ws, min_col=1, min_row=6, max_row=10))
+        ws.add_chart(g, 'B14')
+        ws['A13'] = f'Corrigé : stock final {v:.2f} € · coût des sorties {sorties:.2f} €.'.replace('.', ',')
+        ws['A13'].font = Font(italic=True, color=VERT)
+    wb.active = 1
+    return wb, {'stock_final': arr(v), 'sorties': arr(sorties)}
+
+
+# ─────────────── Atelier 12 : tableau d'emprunt avec VPM et CUMUL.INTER ───────────────
+EMPRUNT = (50000, .04, 60)
+
+
+def atelier12(corrige):
+    wb = Workbook()
+    C, t, n = EMPRUNT
+    consignes_a(wb, 'Atelier 12 · Le tableau d\'emprunt avec VPM',
+                'Construire le tableau de remboursement d\'un emprunt de 50 000 € à 4 % sur 5 ans, séparer intérêts et capital chaque mois, et contrôler les intérêts de la première année avec CUMUL.INTER.',
+                ['Ouvrez la feuille « Exercice ». Les conditions de l\'emprunt sont en B3 (capital), B4 (taux annuel) et B5 (nombre de mensualités).',
+                 'En B7, la mensualité constante : =VPM(B4/12;B5;-B3). Le signe moins rend le résultat positif.',
+                 'Ligne 10 (1re échéance) : capital début =$B$3, intérêts =B10*$B$4/12, mensualité =$B$7, capital remboursé =E10-C10, capital fin =B10-D10.',
+                 'Ligne 11 : le capital début est le capital fin du mois précédent (=F10). Recopiez les autres formules, puis toute la ligne 11 jusqu\'à la ligne 69.',
+                 'Contrôle : le capital fin de la 60e mensualité (F69) doit valoir 0.',
+                 'En B8, les intérêts de la 1re année : =SOMME(C10:C21). Vérifiez-les en D8 avec =-CUMUL.INTER(B4/12;B5;B3;1;12;0).'],
+                ['Mensualité, au centime (B7)', 'Intérêts de la première année (B8)'],
+                'VPM, CUMUL.INTER : les fonctions financières d\'Excel comptent en « flux ». Ce que vous payez est négatif, d\'où les signes moins.')
+    ws = wb.create_sheet('Exercice')
+    titre(ws, 'Emprunt bancaire de l\'atelier de Vania', 'Remboursement par mensualités constantes')
+    for r, (l, v, fmt) in enumerate([('Capital emprunté', C, EURO), ('Taux annuel', t, '0.00%'), ('Nombre de mensualités', n, '0')], start=3):
+        case(ws.cell(row=r, column=1), l, gras=True); x = case(ws.cell(row=r, column=2), v); x.number_format = fmt
+    case(ws['A7'], 'Mensualité', gras=True); case(ws['B7'], '=PMT(B4/12,B5,-B3)' if corrige else None, a_remplir=True, euro=True, gras=True)
+    case(ws['A8'], 'Intérêts de la 1re année', gras=True); case(ws['B8'], '=SUM(C10:C21)' if corrige else None, a_remplir=True, euro=True, gras=True)
+    case(ws['C8'], 'Contrôle'); case(ws['D8'], '=-CUMIPMT(B4/12,B5,B3,1,12,0)' if corrige else None, a_remplir=True, euro=True)
+    entete(ws, 9, ['N°', 'Capital début', 'Intérêts', 'Capital remboursé', 'Mensualité', 'Capital fin'])
+    for k in range(n):
+        r = 10 + k
+        case(ws.cell(row=r, column=1), k + 1)
+        f = {2: '=$B$3' if k == 0 else f'=F{r-1}', 3: f'=B{r}*$B$4/12', 4: f'=E{r}-C{r}', 5: '=$B$7', 6: f'=B{r}-D{r}'}
+        for col, form in f.items():
+            case(ws.cell(row=r, column=col), form if corrige else None, a_remplir=k < 2, euro=True)
+    largeurs(ws, {'A': 26, 'B': 16, 'C': 14, 'D': 18, 'E': 14, 'F': 16})
+    i = t / 12
+    mens = C * i / (1 - (1 + i) ** -n)
+    du, interets = C, 0
+    for _ in range(12):
+        it = du * i; interets += it; du -= mens - it
+    if corrige:
+        ws['H3'] = f'Corrigé : mensualité {mens:.2f} € · intérêts de la 1re année {interets:.2f} € · capital fin de la 60e mensualité 0 €.'.replace('.', ',')
+        ws['H3'].font = Font(italic=True, color=VERT)
+    wb.active = 1
+    return wb, {'mensualite': arr(mens), 'interets_an1': arr(interets)}
+
+
 if __name__ == '__main__':
     for num, f in [(1, atelier1), (2, atelier2), (3, atelier3)]:
         f(False).save(os.path.join(ICI, f'atelier-{num}.xlsx'))
@@ -543,7 +766,7 @@ if __name__ == '__main__':
     wb.save(os.path.join(ICI, 'atelier-4.xlsx'))
     atelier4(True)[0].save(os.path.join(ICI, 'atelier-4-corrige.xlsx'))
     print('ok', 'classe6 =', n6, 'classe4 =', n4)
-    for num, f in [(5, atelier5), (6, atelier6), (7, atelier7), (8, atelier8)]:
+    for num, f in [(5, atelier5), (6, atelier6), (7, atelier7), (8, atelier8), (9, atelier9), (10, atelier10), (11, atelier11), (12, atelier12)]:
         f(False)[0].save(os.path.join(ICI, f'atelier-{num}.xlsx'))
         wb, rep = f(True)
         wb.save(os.path.join(ICI, f'atelier-{num}-corrige.xlsx'))
