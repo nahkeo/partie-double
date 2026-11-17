@@ -6,7 +6,7 @@ const A = window.PDA, {S, save, $, $$, h, esc, fmt, f0, num, sum, pick, uid, lab
 const {MODULES, NIVEAUX, LEXIQUE, PCG, TEST} = window.PD;
 
 /* ══════════ CONTENU ADDITIONNEL PAR MODULE ══════════
-   q : questions de Léa [étape, affirmation, vrai ?, explication] · v : recherches vidéo · s : [étape, schéma] */
+   q : questions de Vania [étape, affirmation, vrai ?, explication] · v : recherches vidéo · s : [étape, schéma] */
 const flux = (X, leg) => `<figure class="sch"><div class="flux">${X.map(x => `<span>${x[0]}<small>${x[1] || ''}</small></span>`).join('<i aria-hidden="true">→</i>')}</div>${leg ? `<figcaption>${leg}</figcaption>` : ''}</figure>`;
 const blocs = (g, d, G, D, leg) => `<figure class="sch"><div class="blocs"><div class="ga"><h5>${g}</h5>${G.map(x => `<p><b>${x[0]}</b>${x[1]}</p>`).join('')}</div><div class="dr"><h5>${d}</h5>${D.map(x => `<p><b>${x[0]}</b>${x[1]}</p>`).join('')}</div></div><figcaption>${leg}</figcaption></figure>`;
 window.PD.PLUS = {
@@ -205,7 +205,7 @@ const use = n => caps[n] || (caps[n] = (window.claude && window.claude.use ? win
 
 /* ══════════ ÉLÉMENTS DE LEÇON ══════════ */
 A.bulle = (q, key) => {
-  const el = h(`<div class="dial"><div class="av" aria-hidden="true">L</div><div class="bul"><p><b>Léa :</b> vrai ou faux ? ${q[1]}</p><div class="seg"><button type="button">Vrai</button><button type="button">Faux</button></div><p class="rep" aria-live="polite"></p></div></div>`);
+  const el = h(`<div class="dial"><div class="av" aria-hidden="true">V</div><div class="bul"><p><b>Vania :</b> vrai ou faux ? ${q[1]}</p><div class="seg"><button type="button">Vrai</button><button type="button">Faux</button></div><p class="rep" aria-live="polite"></p></div></div>`);
   $$('button', el).forEach((b, k) => b.addEventListener('click', () => {
     const ok = (k === 0) === q[2], r = $('.rep', el);
     $$('button', el).forEach(x => x.disabled = true); b.setAttribute('aria-pressed', 'true');
@@ -284,7 +284,7 @@ function tableau() {
       <div class="act" style="margin-top:14px"><span style="font-size:.88rem;color:var(--muted)">Objectif quotidien :</span><div class="seg" id="but">${[20, 30, 50].map(b => `<button type="button" data-b="${b}" aria-pressed="${S.but === b}">${b} XP</button>`).join('')}</div></div></div>
     <div class="verre bloc"><h2>Progression par niveau</h2>${NIVEAUX.map(N => { const M = MODULES.filter(m => m.niv === N.n), a = sum(M, faits), t = sum(M, m => m.ex.length); return `<div class="lig"><span>${N.t}</span><div class="jauge"><i style="width:${100 * a / t}%"></i></div><span>${Math.round(100 * a / t)} %</span></div>`; }).join('')}
       <h2 style="margin-top:18px">Statistiques détaillées</h2>
-      <div class="lig" style="grid-template-columns:1fr auto"><span>Questions de Léa répondues</span><span>${Object.keys(S.qv).length}</span></div>
+      <div class="lig" style="grid-template-columns:1fr auto"><span>Questions de Vania répondues</span><span>${Object.keys(S.qv).length}</span></div>
       <div class="lig" style="grid-template-columns:1fr auto"><span>Meilleure série à l'entraînement</span><span>${Math.max(0, ...Object.values(S.best))}</span></div>
       <div class="lig" style="grid-template-columns:1fr auto"><span>Cartes mémoire maîtrisées</span><span>${maitrisees()} / ${LEXIQUE.length + PCG.length}</span></div>
       <div class="lig" style="grid-template-columns:1fr auto"><span>Examens blancs réussis</span><span>${Object.values(S.exam).filter(e => e.ok).length} / 4</span></div>

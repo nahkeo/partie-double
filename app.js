@@ -279,8 +279,8 @@ function demo(el) {
   const OPS = [
     ['Les associés apportent 10 000 € sur le compte bancaire.', 'Banque', 'Capital', {Banque: 10000}, {Capital: 10000}],
     ['La banque prête 5 000 € à la société.', 'Banque', 'Emprunt', {Banque: 5000}, {Emprunt: 5000}],
-    ['Léa achète une machine 4 000 €, payée par virement.', 'Machine', 'Banque', {Machine: 4000, Banque: -4000}, {}],
-    ['Elle achète 2 000 € de marchandises, payables dans 30 jours.', 'Stock', 'Fournisseurs', {Stock: 2000}, {Fournisseurs: 2000}]
+    ['Vania achète une machine 4 000 €, payée par virement.', 'Machine', 'Banque', {Machine: 4000, Banque: -4000}, {}],
+    ['Vania achète 2 000 € de marchandises, payables dans 30 jours.', 'Stock', 'Fournisseurs', {Stock: 2000}, {Fournisseurs: 2000}]
   ];
   let k = 3;
   el.innerHTML = `<h2>Quatre opérations, un bilan toujours équilibré</h2><p class="op"></p><div class="bilh"><span style="color:var(--debit)">Actif · ce qu'elle possède</span><span style="color:var(--credit)">Passif · d'où ça vient</span></div><div class="bil"><div class="a"></div><div class="p"></div></div><div class="bilt"><span class="ta"></span><span class="tp"></span></div><div class="pas"><button type="button" class="btn sec" data-d="-1">Précédente</button><span class="pts">${OPS.map(() => '<i></i>').join('')}</span><button type="button" class="btn" data-d="1">Suivante</button></div>`;
@@ -320,7 +320,7 @@ function moduleVue(m) {
     </div>
     <div class="fin">${prec ? `<a class="btn sec" href="#${prec.id}">← ${prec.t}</a>` : '<span></span>'}${suiv ? `<a class="btn" href="#${suiv.id}">${suiv.t} →</a>` : '<a class="btn" href="#atelier">Passer à l\'Atelier →</a>'}</div>
   </article>`;
-  /* La leçon se découvre étape par étape ; schémas et questions de Léa s'intercalent */
+  /* La leçon se découvre étape par étape ; schémas et questions de Vania s'intercalent */
   const X = (window.PD.PLUS || {})[m.id] || {}, parts = m.h.split(/(?=<h2>)/).map(s => s.trim()).filter(Boolean), nP = parts.length;
   let vu = faits(m) === m.ex.length ? nP : Math.max(1, Math.min(nP, S.vu[m.id] || 1));
   const E = $('#etapes');
