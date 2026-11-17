@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Partie Double</title>
+<meta name="robots" content="noindex">
+<script>
+  /* Toute adresse inconnue renvoie vers l'application, en gardant la rubrique demandée (#…) */
+  (function () {
+    var base = /github\.io$/.test(location.hostname) ? '/partie-double/' : '/';
+    location.replace(base + (location.hash || ''));
+  })();
+</script>
+<style>
+  body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0F1115;color:#dfe6e1;font:17px/1.6 system-ui,-apple-system,'Segoe UI',sans-serif;text-align:center;padding:16px}
+  a{color:#86e0ae}
+</style>
+</head>
+<body>
+<p>Cette page n'existe pas.<br><a href="/">Ouvrir Partie Double</a></p>
+</body>
+</html>
