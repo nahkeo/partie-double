@@ -522,6 +522,7 @@ function go() {
   (m ? () => moduleVue(m) : ROUTES[k] || accueil)();
   const cur = m || k === 'test' || !ROUTES[k] ? 'parcours' : (A.NAV[k] || k);
   $$('.top nav a').forEach(a => a.getAttribute('href') === '#' + cur ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current'));
+  const actif = $('.top nav a[aria-current]'), nav = $('.top nav'); if (actif && nav) nav.scrollLeft = Math.max(0, actif.offsetLeft - nav.offsetLeft - (nav.clientWidth - actif.offsetWidth) / 2);
   majProg(); window.scrollTo(0, 0);
 }
 window.addEventListener('hashchange', go);

@@ -227,6 +227,17 @@ table{border-collapse:collapse;width:100%}
 .videos{margin:34px 0 0}
 .videos h2{font-size:1.2rem!important}
 .vids{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin:12px 0}
+.vf-niv{margin-top:30px}
+.vf-mod{margin:6px 0 22px}
+.vf-mod h3{font-size:1.1rem;margin:0 0 4px}
+.vf-mod h3 a{color:var(--titre);text-decoration:none}
+.vf-mod h3 a:hover{color:var(--menthe);text-decoration:underline}
+.vf-mod .vids{grid-template-columns:repeat(auto-fill,minmax(220px,1fr))}
+.vf-xl{margin:10px 0 0;font:600 .76rem var(--f-mono);text-transform:uppercase;letter-spacing:.06em;color:var(--menthe)}
+.vf-xl::before{content:"X";display:inline-grid;place-items:center;width:18px;height:18px;margin-right:8px;border-radius:5px;background:#1D6F42;color:#fff;font-size:.7rem;vertical-align:-3px}
+.vf-nv{display:flex;align-items:center;gap:8px;font-size:.9rem;cursor:pointer;white-space:nowrap}
+.filtres .vf-nv input{flex:none;width:17px;height:17px;padding:0;accent-color:var(--vert2)}
+.vf-vide{color:var(--muted)}
 .vid{display:flex;gap:12px;align-items:center;padding:12px 14px;border-radius:14px;background:var(--glass);border:1px solid var(--line);text-decoration:none;color:var(--ink);font-size:.9rem;line-height:1.35;transition:transform .2s,border-color .2s,background .2s}
 .vid:hover{transform:translateY(-3px);border-color:rgba(134,224,174,.5);background:var(--glass2)}
 .vid i{flex:none;width:38px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--vert),var(--vert2));position:relative}
@@ -475,6 +486,7 @@ button.chip{cursor:pointer}
     <a href="#tableau-de-bord">Tableau de bord</a>
     <a href="#atelier">Atelier</a>
     <a href="#entrainement">Pratique</a>
+    <a href="#videos">Vidéos</a>
     <a href="#plan-comptable">Plan comptable</a>
     <a href="#lexique">Lexique</a>
   </nav>

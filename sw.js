@@ -1,6 +1,6 @@
 /* Partie Double : fonctionnement hors ligne.
    Réseau d'abord (pour recevoir les mises à jour), copie locale si le réseau manque. */
-const CACHE = 'partie-double-v8';
+const CACHE = 'partie-double-v9';
 const FICHIERS = ['./', 'index.html', 'data.js', 'app.js', 'plus.js', 'manifest.webmanifest',
   'ateliers/atelier-1.xlsx', 'ateliers/atelier-2.xlsx', 'ateliers/atelier-3.xlsx', 'ateliers/atelier-4.xlsx',
   'ateliers/atelier-5.xlsx', 'ateliers/atelier-6.xlsx', 'ateliers/atelier-7.xlsx', 'ateliers/atelier-8.xlsx',

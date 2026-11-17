@@ -652,7 +652,54 @@ $$('#ia-sugg button').forEach(b => b.addEventListener('click', () => envoyer(b.t
 A.demander = q => { ouvreIA(true); envoyer(q); };
 
 /* ══════════ ROUTES ET DÉMARRAGE ══════════ */
-Object.assign(ROUTES, {'tableau-de-bord': tableau, revision, cartes, examen, certificats});
+/* ══════════ VIDÉOS : toutes les vidéos du parcours, par niveau et par leçon ══════════ */
+function videosVue() {
+  let type = 'tout', nonVues = false;
+  const groupes = MODULES.map(m => ({m, compta: (YT[m.id] || []).length ? m.id : null,
+    excel: Object.keys(XL).filter(k => (XL[k].mod || k) === m.id).map(k => ['__xl_' + k, XL[k]])}));
+  const total = sum(groupes, g => (g.compta ? YT[g.compta].length : 0) + sum(g.excel, e => YT[e[0]].length));
+  const vues = () => Object.keys(S.vid).length;
+  V.innerHTML = `<h1 class="titre">Vidéos</h1>
+  <p class="sous">Toutes les vidéos du parcours, rangées par niveau et par leçon : les cours de comptabilité et les tutos Excel des ateliers. Une vidéo ouverte est marquée « Vue » et rapporte 2 XP.</p>
+  <div class="filtres">
+    <div class="seg" role="group" aria-label="Type de vidéo" id="vf-type"><button type="button" data-t="tout" aria-pressed="true">Toutes</button><button type="button" data-t="compta" aria-pressed="false">Comptabilité</button><button type="button" data-t="excel" aria-pressed="false">Excel</button></div>
+    <label class="vf-nv"><input type="checkbox" id="vf-nv"> Seulement les non vues</label>
+    <input id="vf-q" placeholder="Chercher : TVA, bilan, RECHERCHEV…" aria-label="Chercher une vidéo">
+  </div>
+  <p class="score"><span>Vidéos vues : <b id="vf-vues">${vues()}</b> sur <b>${total}</b></span><span id="vf-n"></span></p>
+  <div id="vf-liste">${NIVEAUX.map(N => `<section class="vf-niv" data-niv="${N.n}"><div class="niv-h"><span class="num">Niveau ${N.n} · ${N.t}</span><h2>${N.s}</h2></div>${groupes.filter(g => g.m.niv === N.n && (g.compta || g.excel.length)).map(g => `<div class="vf-mod"><h3><a href="#${g.m.id}">${g.m.t}</a></h3>${g.compta ? `<div class="vids" data-type="compta" data-cle="${g.compta}"></div>` : ''}${g.excel.map(([cle, x]) => `<p class="vf-xl">Tutos Excel · atelier ${x.n} : ${esc(x.t)}</p><div class="vids" data-type="excel" data-cle="${cle}"></div>`).join('')}</div>`).join('')}</section>`).join('')}</div>
+  <p class="vf-vide" hidden>Aucune vidéo ne correspond. Essayez un autre mot ou retirez un filtre.</p>`;
+  $$('[data-cle]', V).forEach(el => A.videos(el, el.dataset.cle, []));
+  const filtrer = () => {
+    const q = $('#vf-q').value.trim().toLowerCase();
+    let n = 0;
+    $$('.vf-mod', V).forEach(mod => {
+      const titreMod = $('h3', mod).textContent.toLowerCase();
+      let vis = 0;
+      $$('.vids', mod).forEach(g => {
+        let k = 0;
+        $$('.vid', g).forEach(a => {
+          const ok = (type === 'tout' || g.dataset.type === type) && (!nonVues || !S.vid[a.dataset.v]) && (!q || (a.textContent + ' ' + titreMod).toLowerCase().includes(q));
+          a.hidden = !ok; if (ok) k++;
+        });
+        g.hidden = !k; const p = g.previousElementSibling; if (p && p.classList.contains('vf-xl')) p.hidden = !k;
+        vis += k;
+      });
+      mod.hidden = !vis; n += vis;
+    });
+    $$('.vf-niv', V).forEach(s => { s.hidden = !$$('.vf-mod', s).some(m => !m.hidden); });
+    $('.vf-vide', V).hidden = n > 0;
+    $('#vf-n').textContent = n === total ? '' : n + ' affichée' + (n > 1 ? 's' : '');
+    $('#vf-vues').textContent = vues();
+  };
+  $$('#vf-type button').forEach(b => b.addEventListener('click', () => { type = b.dataset.t; $$('#vf-type button').forEach(x => x.setAttribute('aria-pressed', x === b)); filtrer(); }));
+  $('#vf-nv').addEventListener('change', e => { nonVues = e.target.checked; filtrer(); });
+  $('#vf-q').addEventListener('input', filtrer);
+  V.addEventListener('click', e => { if (e.target.closest('.vid.yt')) setTimeout(() => { $('#vf-vues').textContent = vues(); }, 50); });
+  filtrer();
+}
+
+Object.assign(ROUTES, {'tableau-de-bord': tableau, revision, cartes, examen, certificats, videos: videosVue});
 Object.assign(A.NAV, {revision: 'entrainement', cartes: 'entrainement', examen: 'entrainement', certificats: 'tableau-de-bord'});
 $('#theme').addEventListener('click', () => { S.theme = S.theme === 'clair' ? 'sombre' : 'clair'; save(); theme(); });
 theme();
