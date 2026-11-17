@@ -128,7 +128,8 @@ const BADGES = [
   ['defi', 'D', 'Défi relevé', 'Réussir un défi de la semaine', () => S.flags.defi],
   ['curieux', '?', 'Curieux', 'Poser une question à l\'assistant', () => S.flags.curieux],
   ['xl1', 'X', 'Premier classeur', 'Réussir un atelier Excel', () => Object.keys(S.xl || {}).length >= 1],
-  ['xl4', 'XL', 'Excel débutant', 'Réussir les 4 ateliers Excel débutant', () => Object.keys(S.xl || {}).length >= 4]
+  ['xl4', 'XL', 'Excel débutant', 'Réussir les ateliers Excel du niveau Débutant', () => xlFaits(1) >= xlTotal(1)],
+  ['xl8', 'XL+', 'Excel intermédiaire', 'Réussir les ateliers Excel du niveau Intermédiaire', () => xlFaits(2) >= xlTotal(2)]
 ];
 function toast(t) {
   const Z = $('#toasts'), el = h(`<div class="toast">${esc(t)}</div>`);
@@ -241,33 +242,54 @@ A.telecharger = async (nom, data, fb) => {
 /* ══════════ ATELIERS EXCEL ══════════
    etape : étape de la leçon où la carte apparaît · v : [id, titre, chaîne, durée] · d : [intitulé, valeur, unité, tolérance] */
 const XL = {
-'m-bilan': {n: 1, etape: 2, t: 'Construire le bilan avec SOMME', min: 15,
+'m-bilan': {niv: 1, n: 1, etape: 2, t: 'Construire le bilan avec SOMME', min: 15,
   obj: 'Additionnez automatiquement l\'actif et le passif du bilan de Vania, passez les montants en euros et vérifiez que le bilan est équilibré.',
   comp: ['SOMME', 'Alt + =', 'Format monétaire'],
   v: [['BxuQN_oO0VA', 'Tu connais la fonction SOMME ?', 'La minute Excel', '3:22'], ['97wRm52wVxQ', 'Appliquer le format monétaire', 'Ben Info', '0:27']],
   d: [['Total de l\'actif (B11)', 23300, '€'], ['Capitaux propres (E7)', 13800, '€']]},
-'m-resultat': {n: 2, etape: 0, t: 'Le compte de résultat et le symbole $', min: 15,
+'m-resultat': {niv: 1, n: 2, etape: 0, t: 'Le compte de résultat et le symbole $', min: 15,
   obj: 'Calculez le résultat de l\'atelier et le poids de chaque charge dans le chiffre d\'affaires, en recopiant une seule formule grâce à une référence absolue.',
   comp: ['Formules', 'Référence absolue $', 'Recopie', 'Pourcentage'],
   v: [['GqnhbGXmi7I', 'Comprendre la référence absolue', 'CRFormations', '3:32'], ['GWApVx9db1A', 'L\'adressage absolu en 2 minutes', 'Excel en 2 minutes', '1:41']],
   d: [['Résultat de l\'exercice (B17)', 12000, '€'], ['Part des salaires dans le chiffre d\'affaires (C11)', 24.7, '%', .051]]},
-'m-partie-double': {n: 3, etape: 2, t: 'Contrôler un journal avec SI', min: 20,
+'m-partie-double': {niv: 1, n: 3, etape: 2, t: 'Contrôler un journal avec SI', min: 20,
   obj: 'Vérifiez automatiquement que chaque écriture du journal de janvier est équilibrée, et retrouvez celle qui contient une erreur de saisie.',
   comp: ['SI', 'SOMME', 'Recopie de formule'],
   v: [['5lCvmWm6wTc', 'Tu connais la fonction SI ?', 'La minute Excel', '3:49'], ['WPkgLP2Lu6o', 'La formule SI en une minute', 'Axel Formateur Excel', '0:59']],
   d: [['Numéro de l\'écriture en erreur', 4, ''], ['Montant de l\'écart, en valeur positive', 90, '€']]},
-'m-plan': {n: 4, etape: 1, t: 'Trier, filtrer et compter les comptes', min: 15,
+'m-plan': {niv: 1, n: 4, etape: 1, t: 'Trier, filtrer et compter les comptes', min: 15,
   obj: 'Retrouvez la classe de 35 comptes avec GAUCHE, filtrez la liste, triez-la, puis comptez les comptes de chaque classe avec NB.SI.',
   comp: ['GAUCHE', 'Filtres', 'Tri', 'NB.SI'],
   v: [['tmqjEkZy76Y', 'Tu connais la fonction NB.SI ?', 'La minute Excel', '2:35'], ['HlPYn97pDn8', 'Trier et filtrer des données', 'tutosurexcel', '1:11']],
-  d: [['Comptes de classe 6 (charges)', 11, ''], ['Comptes de classe 4 (tiers)', 9, '']]}
+  d: [['Comptes de classe 6 (charges)', 11, ''], ['Comptes de classe 4 (tiers)', 9, '']]},
+'m-journal': {niv: 2, n: 5, etape: 0, t: 'Construire la balance avec SOMME.SI', min: 20,
+  obj: 'Transformez le journal de janvier de l\'atelier de Vania en balance : total débit, total crédit et solde de chaque compte, calculés automatiquement.',
+  comp: ['SOMME.SI', 'MAX', 'Plages figées $', 'Tableau croisé dynamique'],
+  v: [['SqJmG4c1bLY', 'Tu connais la fonction SOMME.SI ?', 'La minute Excel', '2:35'], ['E8tizMO74HU', 'Le tableau croisé dynamique', 'Alphorm', '2:28']],
+  d: [['Solde du compte 512 Banque', 37550, '€'], ['Total des débits du journal', 127850, '€']]},
+'m-tva': {niv: 2, n: 6, etape: 2, t: 'Calculer la TVA et préparer la déclaration', min: 20,
+  obj: 'Calculez la TVA et le TTC de dix factures à 20 %, 10 % et 5,5 %, puis préparez automatiquement la déclaration du mois.',
+  comp: ['ARRONDI', 'SOMME.SI avec texte', 'Formats % et €'],
+  v: [['v0BeX-cp8Z4', 'HT, TTC, TVA : calculer la TVA sur Excel', 'Docteur Excel', '3:12'], ['ndV3GM9VcB8', 'La fonction ARRONDI', 'Excel x Solpedinn', '1:45']],
+  d: [['TVA à décaisser (J7)', 2478.59, '€'], ['Total TTC des ventes (J9)', 27088.22, '€']]},
+'m-banque': {niv: 2, n: 7, etape: 1, t: 'Pointer le relevé et rapprocher la banque', min: 25,
+  obj: 'Repérez automatiquement les opérations présentes d\'un seul côté, colorez-les, puis établissez l\'état de rapprochement de mars.',
+  comp: ['NB.SI', 'SI', 'Mise en forme conditionnelle', 'SOMME.SI.ENS'],
+  v: [['ySPrjHgAMqk', 'Colorer une cellule selon sa valeur', 'La minute Excel', '3:34'], ['tmqjEkZy76Y', 'Tu connais la fonction NB.SI ?', 'La minute Excel', '2:35']],
+  d: [['Solde bancaire corrigé (C21 ou H21)', 11382, '€'], ['Nombre de lignes « À rapprocher », des deux côtés', 4, '']]},
+'m-paie': {niv: 2, n: 8, etape: 0, t: 'Préparer les salaires avec RECHERCHEV', min: 25,
+  obj: 'Calculez les cotisations, le net à payer et le coût employeur de six salariés, en allant chercher les taux de chaque statut dans une table.',
+  comp: ['RECHERCHEV', 'ARRONDI', 'Table de paramètres'],
+  v: [['tAlnUOLJNHA', 'Tu connais la fonction RECHERCHEV ?', 'La minute Excel', '4:16'], ['f6tkMn3i-TA', 'RECHERCHEV : deux démonstrations simples', 'David Montet - Excel Solutions', '3:20']],
+  d: [['Total des nets à payer (H11)', 11906.6, '€'], ['Coût total employeur (J13)', 22260, '€']]}
 };
 const NBXL = Object.keys(XL).length;
 const CHEZ_NOUS = /(^|\.)nahkeo\.fr$|github\.io$|^localhost$|^127\.0\.0\.1$/.test(location.hostname);
 const bouton = (f, txt, cls, cache) => CHEZ_NOUS
   ? `<button type="button" class="btn${cls}" data-f="${f}"${cache ? ' hidden' : ''}>${txt}</button>`
   : `<a class="btn${cls}" data-f="${f}" href="https://compta.nahkeo.fr/${f}" target="_blank" rel="noopener"${cache ? ' hidden' : ''}>${txt}</a>`;
-const xlFaits = () => Object.keys(XL).filter(k => S.xl[k]).length;
+const xlFaits = niv => Object.keys(XL).filter(k => S.xl[k] && (!niv || XL[k].niv === niv)).length;
+const xlTotal = niv => Object.keys(XL).filter(k => XL[k].niv === niv).length;
 A.fichier = async (chemin, nom, fb) => {
   try {
     const r = await fetch(chemin); if (!r.ok) throw new Error(r.status);
@@ -278,7 +300,7 @@ A.atelierXL = (id, k) => {
   const x = XL[id]; if (!x || x.etape !== k) return null;
   const fait = !!S.xl[id];
   const el = h(`<section class="xl${fait ? ' fait' : ''}" aria-label="Atelier Excel ${x.n}">
-    <header><span class="xl-ico" aria-hidden="true">X</span><div><small>Atelier Excel ${x.n} sur ${NBXL} · ${x.min} min · niveau Débutant</small><h3>${x.t}</h3></div><span class="etat">${fait ? 'Réussi' : ''}</span></header>
+    <header><span class="xl-ico" aria-hidden="true">X</span><div><small>Atelier Excel ${x.n} sur ${NBXL} · ${x.min} min · niveau ${NIVEAUX[x.niv - 1].t}</small><h3>${x.t}</h3></div><span class="etat">${fait ? 'Réussi' : ''}</span></header>
     <p>${x.obj}</p>
     <div class="xl-comp">${x.comp.map(c => `<span>${c}</span>`).join('')}</div>
     <ol class="xl-pas"><li><b>Regardez</b> le tuto, court.</li><li><b>Téléchargez</b> le classeur : les consignes sont dans la première feuille, l'exercice dans la seconde, les cellules jaunes à compléter.</li><li><b>Reportez</b> vos résultats ici pour valider l'atelier.</li></ol>
@@ -350,7 +372,7 @@ function tableau() {
     ${stat('Série', serie() + ' j', 'jours consécutifs')}
     ${stat('Temps d\'étude', mn >= 60 ? Math.floor(mn / 60) + ' h ' + String(mn % 60).padStart(2, '0') : mn + ' min', 'temps actif cumulé')}
     ${stat('Modules validés', nm + ' / ' + MODULES.length, '')}
-    ${stat('Ateliers Excel', xlFaits() + ' / ' + NBXL, 'niveau Débutant')}
+    ${stat('Ateliers Excel', xlFaits() + ' / ' + NBXL, 'Débutant ' + xlFaits(1) + '/' + xlTotal(1) + ' · Intermédiaire ' + xlFaits(2) + '/' + xlTotal(2))}
     ${stat('Score moyen', scoreMoyen() === null ? '–' : scoreMoyen() + ' %', 'réussite du premier coup')}
     ${(() => { const N = NIVEAUX.find(x => !(S.exam[x.n] && S.exam[x.n].ok)); if (!N) return stat('Certifications', '4 / 4', 'toutes obtenues'); const M = MODULES.filter(m => m.niv === N.n), p = Math.round(100 * sum(M, faits) / sum(M, m => m.ex.length)); return stat('Prochaine certification', N.t, p + ' % du niveau fait · <a href="#examen">examen</a>'); })()}
     ${stat('Dernière activité', S.dern ? new Date(S.dern.t).toLocaleDateString('fr-FR', {day: 'numeric', month: 'short'}) : '–', S.dern ? esc(S.dern.q) : 'Rien pour l\'instant')}
