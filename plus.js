@@ -263,6 +263,10 @@ const XL = {
   d: [['Comptes de classe 6 (charges)', 11, ''], ['Comptes de classe 4 (tiers)', 9, '']]}
 };
 const NBXL = Object.keys(XL).length;
+const CHEZ_NOUS = /(^|\.)nahkeo\.fr$|github\.io$|^localhost$|^127\.0\.0\.1$/.test(location.hostname);
+const bouton = (f, txt, cls, cache) => CHEZ_NOUS
+  ? `<button type="button" class="btn${cls}" data-f="${f}"${cache ? ' hidden' : ''}>${txt}</button>`
+  : `<a class="btn${cls}" data-f="${f}" href="https://compta.nahkeo.fr/${f}" target="_blank" rel="noopener"${cache ? ' hidden' : ''}>${txt}</a>`;
 const xlFaits = () => Object.keys(XL).filter(k => S.xl[k]).length;
 A.fichier = async (chemin, nom, fb) => {
   try {
@@ -279,13 +283,13 @@ A.atelierXL = (id, k) => {
     <div class="xl-comp">${x.comp.map(c => `<span>${c}</span>`).join('')}</div>
     <ol class="xl-pas"><li><b>Regardez</b> le tuto, court.</li><li><b>Téléchargez</b> le classeur : les consignes sont dans la première feuille, l'exercice dans la seconde, les cellules jaunes à compléter.</li><li><b>Reportez</b> vos résultats ici pour valider l'atelier.</li></ol>
     <div class="vids xl-vids"></div>
-    <div class="act"><button type="button" class="btn" data-f="ateliers/atelier-${x.n}.xlsx">Télécharger le classeur (.xlsx)</button><button type="button" class="btn sec" data-f="ateliers/atelier-${x.n}-corrige.xlsx" ${fait ? '' : 'hidden'}>Télécharger le corrigé</button></div>
+    <div class="act">${bouton(`ateliers/atelier-${x.n}.xlsx`, 'Télécharger le classeur (.xlsx)', '', false)}${bouton(`ateliers/atelier-${x.n}-corrige.xlsx`, 'Télécharger le corrigé', ' sec', !fait)}</div>
     <div class="fb xl-dl" aria-live="polite"></div>
     <form class="xl-defi"><h4>Le défi</h4>${x.d.map((d, i) => { const u = uid(); return `<label for="${u}">${d[0]}<span><input id="${u}" inputmode="decimal" autocomplete="off" data-i="${i}">${d[2] ? `<em>${d[2]}</em>` : ''}</span></label>`; }).join('')}
     <div class="act"><button class="btn">Vérifier mes résultats</button></div><div class="fb" aria-live="polite"></div></form>
   </section>`);
   A.videos($('.xl-vids', el), '__xl_' + id, []);
-  $$('[data-f]', el).forEach(b => b.addEventListener('click', () => A.fichier(b.dataset.f, b.dataset.f.split('/').pop(), $('.xl-dl', el))));
+  if (CHEZ_NOUS) $$('[data-f]', el).forEach(b => b.addEventListener('click', () => A.fichier(b.dataset.f, b.dataset.f.split('/').pop(), $('.xl-dl', el))));
   let essais = 0;
   $('form', el).addEventListener('submit', e => {
     e.preventDefault();
@@ -302,7 +306,7 @@ A.atelierXL = (id, k) => {
     }
     essais++; A.son('ko');
     say(fb, false, (faux.length === 1 ? 'Un résultat ne correspond pas : ' : 'Ces résultats ne correspondent pas : ') + faux.map(d => d[0]).join(', ') + '. Vérifiez la plage de cellules de votre formule.' + (essais >= 2 ? ' <button type="button" class="lien">Télécharger le corrigé pour comparer</button>' : ''));
-    const l = $('.lien', fb); if (l) l.addEventListener('click', () => { $('[data-f$="corrige.xlsx"]', el).hidden = false; A.fichier(`ateliers/atelier-${x.n}-corrige.xlsx`, `atelier-${x.n}-corrige.xlsx`, $('.xl-dl', el)); });
+    const l = $('.lien', fb); if (l) l.addEventListener('click', () => { const c = $('[data-f$="corrige.xlsx"]', el); c.hidden = false; if (CHEZ_NOUS) A.fichier(c.dataset.f, `atelier-${x.n}-corrige.xlsx`, $('.xl-dl', el)); else c.focus(); });
   });
   return el;
 };
