@@ -126,7 +126,9 @@ const BADGES = [
   ['cartes', 'Aa', 'Bonne mémoire', 'Maîtriser 30 cartes mémoire', () => maitrisees() >= 30],
   ['atelier', 'T', 'Teneur de livres', 'Passer une écriture dans l\'Atelier', () => S.flags.atelier],
   ['defi', 'D', 'Défi relevé', 'Réussir un défi de la semaine', () => S.flags.defi],
-  ['curieux', '?', 'Curieux', 'Poser une question à l\'assistant', () => S.flags.curieux]
+  ['curieux', '?', 'Curieux', 'Poser une question à l\'assistant', () => S.flags.curieux],
+  ['xl1', 'X', 'Premier classeur', 'Réussir un atelier Excel', () => Object.keys(S.xl || {}).length >= 1],
+  ['xl4', 'XL', 'Excel débutant', 'Réussir les 4 ateliers Excel débutant', () => Object.keys(S.xl || {}).length >= 4]
 ];
 function toast(t) {
   const Z = $('#toasts'), el = h(`<div class="toast">${esc(t)}</div>`);
@@ -217,7 +219,7 @@ A.bulle = (q, key) => {
 A.videos = (el, id, Q) => {
   const L = YT[id] || [], cap = q => q.charAt(0).toUpperCase() + q.slice(1);
   const R = L.length ? Q.slice(0, 1) : Q;
-  el.innerHTML = L.map(([v, t, d]) => `<a class="vid yt${S.vid[v] ? ' vue' : ''}" data-v="${v}" href="https://www.youtube.com/watch?v=${v}" target="_blank" rel="noopener"><span class="mini"><img src="https://i.ytimg.com/vi/${v}/mqdefault.jpg" alt="" loading="lazy"><i aria-hidden="true"></i>${d ? `<em>${d}</em>` : ''}</span><span class="vt">${esc(t)}<small>${S.vid[v] ? 'Déjà vue' : 'Les Geeks des Chiffres'}</small></span></a>`).join('')
+  el.innerHTML = L.map(x => { const [v, t] = x, d = x.length > 3 ? x[3] : x[2], ch = x.length > 3 ? x[2] : 'Les Geeks des Chiffres'; return `<a class="vid yt${S.vid[v] ? ' vue' : ''}" data-v="${v}" href="https://www.youtube.com/watch?v=${v}" target="_blank" rel="noopener"><span class="mini"><img src="https://i.ytimg.com/vi/${v}/mqdefault.jpg" alt="" loading="lazy"><i aria-hidden="true"></i>${d ? `<em>${d}</em>` : ''}</span><span class="vt">${esc(t)}<small data-ch="${esc(ch)}">${S.vid[v] ? 'Déjà vue' : esc(ch)}</small></span></a>`; }).join('')
     + R.map(q => `<a class="vid" href="https://www.youtube.com/results?search_query=${encodeURIComponent(q)}" target="_blank" rel="noopener"><i aria-hidden="true"></i><span>${L.length ? 'Chercher d\'autres vidéos sur YouTube' : esc(cap(q))}<small>Recherche YouTube</small></span></a>`).join('');
   $$('img', el).forEach(i => i.addEventListener('error', () => i.remove()));
   $$('.yt', el).forEach(a => a.addEventListener('click', () => {
@@ -233,9 +235,78 @@ A.telecharger = async (nom, data, fb) => {
     catch (e) { if (fb) say(fb, false, e && e.code === 'declined' ? 'Téléchargement annulé.' : 'Le téléchargement n\'a pas abouti. Réessayez dans un instant.'); }
     return;
   }
-  try { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([data], {type: 'text/html'})); a.download = nom; document.body.append(a); a.click(); a.remove(); }
+  try { const a = document.createElement('a'); a.href = URL.createObjectURL(data instanceof Blob ? data : new Blob([data], {type: 'text/html'})); a.download = nom; document.body.append(a); a.click(); a.remove(); }
   catch (e) { if (fb) say(fb, false, 'Le téléchargement n\'est pas disponible dans cette vue.'); }
 };
+/* ══════════ ATELIERS EXCEL ══════════
+   etape : étape de la leçon où la carte apparaît · v : [id, titre, chaîne, durée] · d : [intitulé, valeur, unité, tolérance] */
+const XL = {
+'m-bilan': {n: 1, etape: 2, t: 'Construire le bilan avec SOMME', min: 15,
+  obj: 'Additionnez automatiquement l\'actif et le passif du bilan de Vania, passez les montants en euros et vérifiez que le bilan est équilibré.',
+  comp: ['SOMME', 'Alt + =', 'Format monétaire'],
+  v: [['BxuQN_oO0VA', 'Tu connais la fonction SOMME ?', 'La minute Excel', '3:22'], ['97wRm52wVxQ', 'Appliquer le format monétaire', 'Ben Info', '0:27']],
+  d: [['Total de l\'actif (B11)', 23300, '€'], ['Capitaux propres (E7)', 13800, '€']]},
+'m-resultat': {n: 2, etape: 0, t: 'Le compte de résultat et le symbole $', min: 15,
+  obj: 'Calculez le résultat de l\'atelier et le poids de chaque charge dans le chiffre d\'affaires, en recopiant une seule formule grâce à une référence absolue.',
+  comp: ['Formules', 'Référence absolue $', 'Recopie', 'Pourcentage'],
+  v: [['GqnhbGXmi7I', 'Comprendre la référence absolue', 'CRFormations', '3:32'], ['GWApVx9db1A', 'L\'adressage absolu en 2 minutes', 'Excel en 2 minutes', '1:41']],
+  d: [['Résultat de l\'exercice (B17)', 12000, '€'], ['Part des salaires dans le chiffre d\'affaires (C11)', 24.7, '%', .051]]},
+'m-partie-double': {n: 3, etape: 2, t: 'Contrôler un journal avec SI', min: 20,
+  obj: 'Vérifiez automatiquement que chaque écriture du journal de janvier est équilibrée, et retrouvez celle qui contient une erreur de saisie.',
+  comp: ['SI', 'SOMME', 'Recopie de formule'],
+  v: [['5lCvmWm6wTc', 'Tu connais la fonction SI ?', 'La minute Excel', '3:49'], ['WPkgLP2Lu6o', 'La formule SI en une minute', 'Axel Formateur Excel', '0:59']],
+  d: [['Numéro de l\'écriture en erreur', 4, ''], ['Montant de l\'écart, en valeur positive', 90, '€']]},
+'m-plan': {n: 4, etape: 1, t: 'Trier, filtrer et compter les comptes', min: 15,
+  obj: 'Retrouvez la classe de 35 comptes avec GAUCHE, filtrez la liste, triez-la, puis comptez les comptes de chaque classe avec NB.SI.',
+  comp: ['GAUCHE', 'Filtres', 'Tri', 'NB.SI'],
+  v: [['tmqjEkZy76Y', 'Tu connais la fonction NB.SI ?', 'La minute Excel', '2:35'], ['HlPYn97pDn8', 'Trier et filtrer des données', 'tutosurexcel', '1:11']],
+  d: [['Comptes de classe 6 (charges)', 11, ''], ['Comptes de classe 4 (tiers)', 9, '']]}
+};
+const NBXL = Object.keys(XL).length;
+const xlFaits = () => Object.keys(XL).filter(k => S.xl[k]).length;
+A.fichier = async (chemin, nom, fb) => {
+  try {
+    const r = await fetch(chemin); if (!r.ok) throw new Error(r.status);
+    await A.telecharger(nom, await r.blob(), fb);
+  } catch (e) { if (fb) say(fb, false, 'Le fichier n\'a pas pu être récupéré. Vérifiez la connexion et réessayez.'); }
+};
+A.atelierXL = (id, k) => {
+  const x = XL[id]; if (!x || x.etape !== k) return null;
+  const fait = !!S.xl[id];
+  const el = h(`<section class="xl${fait ? ' fait' : ''}" aria-label="Atelier Excel ${x.n}">
+    <header><span class="xl-ico" aria-hidden="true">X</span><div><small>Atelier Excel ${x.n} sur ${NBXL} · ${x.min} min · niveau Débutant</small><h3>${x.t}</h3></div><span class="etat">${fait ? 'Réussi' : ''}</span></header>
+    <p>${x.obj}</p>
+    <div class="xl-comp">${x.comp.map(c => `<span>${c}</span>`).join('')}</div>
+    <ol class="xl-pas"><li><b>Regardez</b> le tuto, court.</li><li><b>Téléchargez</b> le classeur : les consignes sont dans la première feuille, l'exercice dans la seconde, les cellules jaunes à compléter.</li><li><b>Reportez</b> vos résultats ici pour valider l'atelier.</li></ol>
+    <div class="vids xl-vids"></div>
+    <div class="act"><button type="button" class="btn" data-f="ateliers/atelier-${x.n}.xlsx">Télécharger le classeur (.xlsx)</button><button type="button" class="btn sec" data-f="ateliers/atelier-${x.n}-corrige.xlsx" ${fait ? '' : 'hidden'}>Télécharger le corrigé</button></div>
+    <div class="fb xl-dl" aria-live="polite"></div>
+    <form class="xl-defi"><h4>Le défi</h4>${x.d.map((d, i) => { const u = uid(); return `<label for="${u}">${d[0]}<span><input id="${u}" inputmode="decimal" autocomplete="off" data-i="${i}">${d[2] ? `<em>${d[2]}</em>` : ''}</span></label>`; }).join('')}
+    <div class="act"><button class="btn">Vérifier mes résultats</button></div><div class="fb" aria-live="polite"></div></form>
+  </section>`);
+  A.videos($('.xl-vids', el), '__xl_' + id, []);
+  $$('[data-f]', el).forEach(b => b.addEventListener('click', () => A.fichier(b.dataset.f, b.dataset.f.split('/').pop(), $('.xl-dl', el))));
+  let essais = 0;
+  $('form', el).addEventListener('submit', e => {
+    e.preventDefault();
+    const fb = $('form .fb', el), I = $$('input', el);
+    if (I.some(i => !i.value.trim())) { say(fb, false, 'Complétez chaque résultat avant de vérifier.'); return; }
+    const faux = x.d.filter((d, i) => Math.abs(num(I[i].value) - d[1]) > (d[3] || .01));
+    I.forEach((inp, i) => inp.classList.toggle('ko', Math.abs(num(inp.value) - x.d[i][1]) > (x.d[i][3] || .01)));
+    if (!faux.length) {
+      say(fb, true, '<b>Atelier réussi.</b> Vos formules donnent les bons résultats. Le corrigé est disponible pour comparer votre classeur.');
+      $('[data-f$="corrige.xlsx"]', el).hidden = false; el.classList.add('fait', 'pop'); $('.etat', el).textContent = 'Réussi';
+      if (!S.xl[id]) { S.xl[id] = Date.now(); A.gain(15, 'xl', 'Atelier Excel : ' + x.t); }
+      A.son('ok');
+      return;
+    }
+    essais++; A.son('ko');
+    say(fb, false, (faux.length === 1 ? 'Un résultat ne correspond pas : ' : 'Ces résultats ne correspondent pas : ') + faux.map(d => d[0]).join(', ') + '. Vérifiez la plage de cellules de votre formule.' + (essais >= 2 ? ' <button type="button" class="lien">Télécharger le corrigé pour comparer</button>' : ''));
+    const l = $('.lien', fb); if (l) l.addEventListener('click', () => { $('[data-f$="corrige.xlsx"]', el).hidden = false; A.fichier(`ateliers/atelier-${x.n}-corrige.xlsx`, `atelier-${x.n}-corrige.xlsx`, $('.xl-dl', el)); });
+  });
+  return el;
+};
+Object.keys(XL).forEach(k => { YT['__xl_' + k] = XL[k].v; });
 A.fiche = (m, fb) => {
   const d = document.createElement('div'); d.innerHTML = m.h;
   const bloc = s => [...d.querySelectorAll(s)].map(e => e.outerHTML).join('');
@@ -275,6 +346,7 @@ function tableau() {
     ${stat('Série', serie() + ' j', 'jours consécutifs')}
     ${stat('Temps d\'étude', mn >= 60 ? Math.floor(mn / 60) + ' h ' + String(mn % 60).padStart(2, '0') : mn + ' min', 'temps actif cumulé')}
     ${stat('Modules validés', nm + ' / ' + MODULES.length, '')}
+    ${stat('Ateliers Excel', xlFaits() + ' / ' + NBXL, 'niveau Débutant')}
     ${stat('Score moyen', scoreMoyen() === null ? '–' : scoreMoyen() + ' %', 'réussite du premier coup')}
     ${(() => { const N = NIVEAUX.find(x => !(S.exam[x.n] && S.exam[x.n].ok)); if (!N) return stat('Certifications', '4 / 4', 'toutes obtenues'); const M = MODULES.filter(m => m.niv === N.n), p = Math.round(100 * sum(M, faits) / sum(M, m => m.ex.length)); return stat('Prochaine certification', N.t, p + ' % du niveau fait · <a href="#examen">examen</a>'); })()}
     ${stat('Dernière activité', S.dern ? new Date(S.dern.t).toLocaleDateString('fr-FR', {day: 'numeric', month: 'short'}) : '–', S.dern ? esc(S.dern.q) : 'Rien pour l\'instant')}

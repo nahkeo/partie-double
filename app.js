@@ -23,7 +23,7 @@ const NOMNAT = {A: 'Actif', P: 'Passif', C: 'Charge', R: 'Produit', AM: 'En moin
 
 /* ── état, gardé dans ce navigateur ── */
 const KEY = 'partie-double-v1';
-const S = {ok: {}, atelier: null, test: null, best: {}, xp: 0, jours: {}, badges: {}, flags: {}, qv: {}, vu: {}, finis: {}, cartes: {}, nbCartes: 0, exam: {}, temps: 0, dern: null, sem: null, but: 30, nom: '', err: {}, prem: {}, notes: {}, son: true, theme: 'sombre', libre: false, hist: [], vid: {}};
+const S = {ok: {}, atelier: null, test: null, best: {}, xp: 0, jours: {}, badges: {}, flags: {}, qv: {}, vu: {}, finis: {}, cartes: {}, nbCartes: 0, exam: {}, temps: 0, dern: null, sem: null, but: 30, nom: '', err: {}, prem: {}, notes: {}, son: true, theme: 'sombre', libre: false, hist: [], vid: {}, xl: {}};
 try { Object.assign(S, JSON.parse(localStorage.getItem(KEY) || '{}')); } catch (e) { /* stockage indisponible */ }
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* idem */ } };
 MODULES.forEach(m => m.ex.forEach((e, i) => { e._k = m.id + ':' + i; }));
@@ -269,7 +269,7 @@ function accueil() {
   demo($('#demo'));
   const raz = $('#raz');
   raz.addEventListener('click', () => {
-    if (raz.dataset.sur) { Object.assign(S, {ok: {}, test: null, best: {}, xp: 0, jours: {}, badges: {}, flags: {}, qv: {}, vu: {}, finis: {}, cartes: {}, nbCartes: 0, exam: {}, temps: 0, dern: null, sem: null, err: {}, prem: {}, notes: {}, hist: [], vid: {}}); save(); go(); }
+    if (raz.dataset.sur) { Object.assign(S, {ok: {}, test: null, best: {}, xp: 0, jours: {}, badges: {}, flags: {}, qv: {}, vu: {}, finis: {}, cartes: {}, nbCartes: 0, exam: {}, temps: 0, dern: null, sem: null, err: {}, prem: {}, notes: {}, hist: [], vid: {}, xl: {}}); save(); go(); }
     else { raz.dataset.sur = 1; raz.textContent = 'Cliquez encore pour confirmer l\'effacement'; }
   });
 }
@@ -327,6 +327,7 @@ function moduleVue(m) {
   parts.forEach((p, k) => {
     const s = h(`<section class="etape" hidden>${p}${X.s && X.s[0] === k ? X.s[1] : ''}</section>`);
     (X.q || []).filter(q => q[0] === k).forEach((q, j) => s.append(A.bulle(q, m.id + ':' + k + ':' + j)));
+    const ax = A.atelierXL(m.id, k); if (ax) s.append(ax);
     E.append(s);
   });
   $('#jal').innerHTML = parts.map(() => '<i></i>').join('');

@@ -1,7 +1,8 @@
 /* Partie Double : fonctionnement hors ligne.
    Réseau d'abord (pour recevoir les mises à jour), copie locale si le réseau manque. */
-const CACHE = 'partie-double-v3';
+const CACHE = 'partie-double-v4';
 const FICHIERS = ['./', 'index.html', 'data.js', 'app.js', 'plus.js', 'manifest.webmanifest',
+  'ateliers/atelier-1.xlsx', 'ateliers/atelier-2.xlsx', 'ateliers/atelier-3.xlsx', 'ateliers/atelier-4.xlsx',
   'icones/icone.svg', 'icones/icone-180.png', 'icones/icone-192.png', 'icones/icone-512.png'];
 
 self.addEventListener('install', e => {
