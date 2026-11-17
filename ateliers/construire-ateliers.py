@@ -758,6 +758,231 @@ def atelier12(corrige):
     return wb, {'mensualite': arr(mens), 'interets_an1': arr(interets)}
 
 
+# ═══════════════════════ NIVEAU CONFIRMÉ ═══════════════════════
+from openpyxl.chart import BarChart
+
+
+def consignes_c(wb, *a):
+    consignes(wb, *a)
+    wb.active['A2'] = 'Partie Double · atelier Excel · niveau Confirmé'
+
+
+def bloc_entete(ws, ligne, col, titres):
+    for j, t in enumerate(titres):
+        c = ws.cell(row=ligne, column=col + j, value=t)
+        c.font = Font(bold=True, color='FFFFFF'); c.fill = PatternFill('solid', fgColor=VERT); c.border = BORD
+
+
+# ─────────────── Atelier 13 : soldes intermédiaires de gestion et graphique en cascade ───────────────
+CR = [('Ventes de marchandises', 180000), ('Coût d\'achat des marchandises vendues', 105000), ('Production vendue', 220000),
+      ('Consommations en provenance des tiers', 95000), ('Impôts et taxes', 6000), ('Charges de personnel', 150000),
+      ('Dotations aux amortissements', 22000), ('Reprises sur provisions', 2000), ('Résultat financier', -4000), ('Impôt sur les bénéfices', 4500)]
+
+
+def atelier13(corrige):
+    wb = Workbook()
+    consignes_c(wb, 'Atelier 13 · Les soldes intermédiaires de gestion en cascade',
+                'À partir du compte de résultat 2026 de l\'atelier de Vania, calculer les soldes intermédiaires de gestion et la capacité d\'autofinancement, les rapporter au chiffre d\'affaires et les montrer dans un graphique en cascade.',
+                ['Ouvrez la feuille « Exercice ». Les postes du compte de résultat sont en B5:B14 ; le tableau des soldes est à droite.',
+                 'Calculez chaque solde avec les cellules de gauche : marge commerciale =B5-B6, valeur ajoutée = marge + B7 - B8, excédent brut d\'exploitation = valeur ajoutée - B9 - B10, et ainsi de suite.',
+                 'Résultat d\'exploitation = EBE - dotations + reprises ; résultat courant = résultat d\'exploitation + résultat financier ; résultat net = résultat courant - impôt.',
+                 'Capacité d\'autofinancement = résultat net + dotations - reprises.',
+                 'En G5, le chiffre d\'affaires (ventes + production). Dans la colonne « % du CA », divisez chaque solde par $G$5.',
+                 'Bonus : sélectionnez les libellés et les montants du tableau des soldes, puis Insertion > Graphique en cascade (Excel 2016 ou plus récent).'],
+                ['Excédent brut d\'exploitation', 'Capacité d\'autofinancement'],
+                'Un solde négatif n\'est pas une erreur de formule : un EBE négatif signale un métier qui perd de l\'argent avant même ses amortissements.')
+    ws = wb.create_sheet('Exercice')
+    titre(ws, 'Compte de résultat 2026 et soldes intermédiaires de gestion', 'Atelier de Vania · montants en euros')
+    entete(ws, 4, ['Poste du compte de résultat', 'Montant'])
+    for i, (l, v) in enumerate(CR):
+        case(ws.cell(row=5 + i, column=1), l); case(ws.cell(row=5 + i, column=2), v, euro=True)
+    case(ws['F5'], 'Chiffre d\'affaires', gras=True); case(ws['G5'], '=B5+B7' if corrige else None, a_remplir=True, euro=True, gras=True)
+    bloc_entete(ws, 7, 6, ['Solde', 'Montant', '% du CA'])
+    soldes = [('Marge commerciale', '=B5-B6'), ('Valeur ajoutée', '=G8+B7-B8'), ('Excédent brut d\'exploitation', '=G9-B9-B10'),
+              ('Résultat d\'exploitation', '=G10-B11+B12'), ('Résultat courant avant impôt', '=G11+B13'), ('Résultat net', '=G12-B14'),
+              ('Capacité d\'autofinancement', '=G13+B11-B12')]
+    for k, (l, f) in enumerate(soldes):
+        r = 8 + k
+        case(ws.cell(row=r, column=6), l, gras=k in (2, 6))
+        case(ws.cell(row=r, column=7), f if corrige else None, a_remplir=True, euro=True, gras=k in (2, 6))
+        case(ws.cell(row=r, column=8), f'=G{r}/$G$5' if corrige else None, a_remplir=True, pct=True)
+    largeurs(ws, {'A': 40, 'B': 14, 'C': 3, 'D': 3, 'E': 3, 'F': 32, 'G': 14, 'H': 11})
+    v = dict(CR)
+    mc = v['Ventes de marchandises'] - v['Coût d\'achat des marchandises vendues']
+    va = mc + v['Production vendue'] - v['Consommations en provenance des tiers']
+    ebe = va - v['Impôts et taxes'] - v['Charges de personnel']
+    rex = ebe - v['Dotations aux amortissements'] + v['Reprises sur provisions']
+    rn = rex + v['Résultat financier'] - v['Impôt sur les bénéfices']
+    caf = rn + v['Dotations aux amortissements'] - v['Reprises sur provisions']
+    if corrige:
+        g = BarChart(); g.type = 'col'; g.title = 'Soldes intermédiaires de gestion'; g.height, g.width = 8, 16; g.legend = None
+        g.add_data(Reference(ws, min_col=7, min_row=7, max_row=14), titles_from_data=True)
+        g.set_categories(Reference(ws, min_col=6, min_row=8, max_row=14))
+        ws.add_chart(g, 'F17')
+        ws['A17'] = f'Corrigé : EBE {ebe} € · résultat net {rn} € · CAF {caf} €.'
+        ws['A17'].font = Font(italic=True, color=VERT)
+        ws['A18'] = 'Le graphique joint est un histogramme ; le graphique en cascade se crée dans Excel (Insertion > Cascade).'
+        ws['A18'].font = Font(italic=True, color=GRIS)
+    wb.active = 1
+    return wb, {'ebe': ebe, 'caf': caf, 'rn': rn}
+
+
+# ─────────────── Atelier 14 : analyse du bilan, ratios et SIERREUR ───────────────
+BILAN_F = [('Capitaux propres', 195000, 210000), ('Amortissements et dépréciations', 70000, 90000), ('Emprunts', 140000, 120000),
+           ('Immobilisations brutes', 350000, 360000), ('Stocks', 40000, 45000), ('Créances clients (TTC)', 72000, 96000),
+           ('Autres créances d\'exploitation', 6000, 9000), ('Dettes fournisseurs (TTC)', 50000, 54000), ('Dettes fiscales et sociales', 28000, 31000),
+           ('Disponibilités', 20000, 7000), ('Concours bancaires courants', 5000, 12000),
+           ('Chiffre d\'affaires TTC', 480000, 576000), ('Achats TTC', 300000, 324000), ('Capacité d\'autofinancement', 0, 35500)]
+
+
+def atelier14(corrige):
+    wb = Workbook()
+    consignes_c(wb, 'Atelier 14 · Analyser le bilan : fonds de roulement, BFR, ratios',
+                'Comparer 2025 et 2026 : fonds de roulement, besoin en fonds de roulement, trésorerie nette, délais de paiement et capacité de remboursement, sans afficher d\'erreur quand un ratio est impossible.',
+                ['Ouvrez la feuille « Exercice ». Les données du bilan fonctionnel sont en lignes 5 à 18, pour 2025 (colonne B) et 2026 (colonne C).',
+                 'Fonds de roulement = capitaux propres + amortissements + emprunts - immobilisations brutes.',
+                 'BFR = stocks + créances clients + autres créances - dettes fournisseurs - dettes fiscales et sociales. Trésorerie nette = FR - BFR.',
+                 'Contrôle : la trésorerie nette doit aussi valoir disponibilités - concours bancaires.',
+                 'Délai clients = créances clients / chiffre d\'affaires TTC × 360. Délai fournisseurs = dettes fournisseurs / achats TTC × 360.',
+                 'Capacité de remboursement = emprunts / CAF. En 2025, la CAF vaut 0 : entourez la formule de SIERREUR(…;"non calculable"). Puis mettez en rouge une trésorerie négative (mise en forme conditionnelle).'],
+                ['Trésorerie nette 2026', 'Délai clients 2026, en jours'],
+                'SIERREUR(formule ; valeur si erreur) : si la formule renvoie #DIV/0!, Excel affiche votre texte à la place.')
+    ws = wb.create_sheet('Exercice')
+    titre(ws, 'Analyse financière de l\'atelier de Vania', 'Bilan fonctionnel simplifié · montants en euros')
+    entete(ws, 4, ['Donnée', '2025', '2026'])
+    for i, (l, a, b) in enumerate(BILAN_F):
+        r = 5 + i
+        case(ws.cell(row=r, column=1), l); case(ws.cell(row=r, column=2), a, euro=True); case(ws.cell(row=r, column=3), b, euro=True)
+    bloc_entete(ws, 4, 5, ['Indicateur', '2025', '2026'])
+    ind = [('Fonds de roulement', '={c}5+{c}6+{c}7-{c}8', EURO), ('Besoin en fonds de roulement', '={c}9+{c}10+{c}11-{c}12-{c}13', EURO),
+           ('Trésorerie nette', '={c}F-{c}G', EURO), ('Contrôle : disponibilités - concours', '={c}14-{c}15', EURO),
+           ('Délai clients (jours)', '={c}10/{c}16*360', '0'), ('Délai fournisseurs (jours)', '={c}12/{c}17*360', '0'),
+           ('Capacité de remboursement (années)', '=IFERROR({c}7/{c}18,"non calculable")', '0.0')]
+    for k, (l, f, fmt) in enumerate(ind):
+        r = 5 + k
+        case(ws.cell(row=r, column=5), l, gras=k == 2)
+        for j, (src, dst) in enumerate([('B', 'F'), ('C', 'G')]):
+            form = f.format(c=src).replace(f'{src}F', f'{dst}5').replace(f'{src}G', f'{dst}6')
+            x = case(ws.cell(row=r, column=6 + j), form if corrige else None, a_remplir=True, gras=k == 2)
+            x.number_format = fmt
+    if corrige:
+        ws.conditional_formatting.add('F7:G7', CellIsRule(operator='lessThan', formula=['0'], fill=PatternFill('solid', fgColor='FFC7CE'), font=Font(color='9C0006', bold=True)))
+    largeurs(ws, {'A': 34, 'B': 14, 'C': 14, 'D': 3, 'E': 36, 'F': 15, 'G': 15})
+    d = {l: (a, b) for l, a, b in BILAN_F}
+    def calc(i):
+        fr = d['Capitaux propres'][i] + d['Amortissements et dépréciations'][i] + d['Emprunts'][i] - d['Immobilisations brutes'][i]
+        bfr = d['Stocks'][i] + d['Créances clients (TTC)'][i] + d['Autres créances d\'exploitation'][i] - d['Dettes fournisseurs (TTC)'][i] - d['Dettes fiscales et sociales'][i]
+        tn = fr - bfr
+        assert tn == d['Disponibilités'][i] - d['Concours bancaires courants'][i], (i, tn)
+        return fr, bfr, tn, d['Créances clients (TTC)'][i] / d['Chiffre d\'affaires TTC'][i] * 360
+    c25, c26 = calc(0), calc(1)
+    if corrige:
+        ws['E14'] = f'Corrigé 2026 : FR {c26[0]} € · BFR {c26[1]} € · trésorerie nette {c26[2]} € · délai clients {c26[3]:.0f} jours.'
+        ws['E14'].font = Font(italic=True, color=VERT)
+    wb.active = 1
+    return wb, {'tn26': c26[2], 'delai26': c26[3], 'tn25': c25[2]}
+
+
+# ─────────────── Atelier 15 : impôt sur les sociétés et affectation du résultat ───────────────
+def atelier15(corrige):
+    wb = Workbook()
+    consignes_c(wb, 'Atelier 15 · L\'impôt sur les sociétés et l\'affectation du résultat',
+                'Passer du résultat comptable au résultat fiscal, calculer l\'impôt avec le taux réduit des PME, puis répartir le bénéfice : réserve légale, dividendes, report à nouveau.',
+                ['Ouvrez la feuille « Exercice ». Les données de clôture sont en colonne B.',
+                 'En B11, le résultat fiscal : résultat comptable avant impôt + réintégrations - déficit antérieur imputé.',
+                 'En B13, la part imposée à 15 % : =SI(B12="Oui";MIN(B11;42500);0). En B14, la part imposée à 25 % : =B11-B13.',
+                 'En B15, l\'impôt : =ARRONDI(B13*15%+B14*25%;0). En B16, le résultat net : résultat comptable avant impôt - impôt.',
+                 'En B20, la dotation à la réserve légale : =MIN(5%*B16;MAX(0;10%*B18-B19)). Elle s\'arrête quand la réserve atteint 10 % du capital.',
+                 'En B22, le report à nouveau : résultat net - réserve légale - dividendes. Essayez « Non » en B12 pour voir l\'impôt sans taux réduit.'],
+                ['Impôt sur les sociétés dû (B15)', 'Dotation à la réserve légale (B20)'],
+                'MIN renvoie la plus petite valeur, MAX la plus grande : MAX(0;…) empêche un montant négatif quand la réserve a déjà atteint son plafond.')
+    ws = wb.create_sheet('Exercice')
+    titre(ws, 'Clôture 2026 : impôt et affectation', 'Atelier de Vania SAS · taux 2026 : 15 % jusqu\'à 42 500 € pour les PME éligibles, 25 % au-delà')
+    lignes = [(4, 'Résultat comptable avant impôt', 118000, EURO, False), (5, 'Réintégration : amendes et pénalités', 1500, EURO, False),
+              (6, 'Réintégration : amortissement excédentaire d\'un véhicule', 2300, EURO, False), (7, 'Déficit antérieur imputé', 20000, EURO, False),
+              (11, 'Résultat fiscal', '=B4+B5+B6-B7', EURO, True), (12, 'PME éligible au taux réduit ? (Oui / Non)', 'Oui', '@', False),
+              (13, 'Part imposée à 15 %', '=IF(B12="Oui",MIN(B11,42500),0)', EURO, True), (14, 'Part imposée à 25 %', '=B11-B13', EURO, True),
+              (15, 'Impôt sur les sociétés', '=ROUND(B13*15%+B14*25%,0)', EURO, True), (16, 'Résultat net', '=B4-B15', EURO, True),
+              (18, 'Capital social', 50000, EURO, False), (19, 'Réserve légale déjà constituée', 3000, EURO, False),
+              (20, 'Dotation à la réserve légale', '=MIN(5%*B16,MAX(0,10%*B18-B19))', EURO, True), (21, 'Dividendes votés', 60000, EURO, False),
+              (22, 'Report à nouveau', '=B16-B20-B21', EURO, True)]
+    for r, l, v, fmt, formule in lignes:
+        case(ws.cell(row=r, column=1), l, gras=formule)
+        x = case(ws.cell(row=r, column=2), (v if corrige else None) if formule else v, a_remplir=formule, gras=formule)
+        x.number_format = fmt
+    for r, t in [(3, 'Du résultat comptable au résultat fiscal'), (10, 'Impôt sur les sociétés'), (17, 'Affectation du résultat')]:
+        ws.cell(row=r, column=1, value=t).font = Font(bold=True, color=VERT, size=12)
+    largeurs(ws, {'A': 52, 'B': 16})
+    rf = 118000 + 1500 + 2300 - 20000
+    p15 = min(rf, 42500); impot = round(p15 * .15 + (rf - p15) * .25)
+    rn = 118000 - impot; rl = min(.05 * rn, max(0, .1 * 50000 - 3000)); ran = rn - rl - 60000
+    if corrige:
+        ws['A24'] = f'Corrigé : résultat fiscal {rf} € · impôt {impot} € · résultat net {rn} € · réserve légale {rl:.0f} € · report à nouveau {ran:.0f} €.'
+        ws['A24'].font = Font(italic=True, color=VERT)
+    wb.active = 1
+    return wb, {'rf': rf, 'impot': impot, 'rn': rn, 'rl': rl, 'ran': ran}
+
+
+# ─────────────── Atelier 16 : consolider trois sociétés avec des références 3D ───────────────
+POSTES = ['Chiffre d\'affaires', 'Achats consommés', 'Charges externes', 'Charges de personnel', 'Dotations aux amortissements']
+SOCIETES = [('Mère', [500000, 260000, 80000, 110000, 20000]), ('Filiale A', [200000, 90000, 30000, 55000, 5000]), ('Filiale B', [150000, 70000, 25000, 35000, 5000])]
+INTRA = [('Mère', 'Filiale A', 'Vente de luminaires', 40000, 'Achats consommés'), ('Filiale B', 'Mère', 'Prestation de design', 10000, 'Charges externes')]
+
+
+def atelier16(corrige):
+    wb = Workbook()
+    consignes_c(wb, 'Atelier 16 · Consolider trois sociétés avec des références 3D',
+                'Cumuler les comptes de résultat de la mère et de ses deux filiales avec une seule formule par ligne, éliminer les opérations internes au groupe, puis partager le résultat entre le groupe et les minoritaires.',
+                ['Les feuilles « Mère », « Filiale A » et « Filiale B » ont exactement la même mise en page : chaque poste est sur la même ligne.',
+                 'Feuille « Consolidé », en B5 : =SOMME(\'Mère:Filiale B\'!B5). Les apostrophes entourent les deux noms de feuilles, car ils contiennent un espace ou un accent. Cette référence 3D additionne la cellule B5 de toutes les feuilles entre Mère et Filiale B. Recopiez jusqu\'en B9.',
+                 'Colonne C, les éliminations. Le chiffre d\'affaires interne est le total de la feuille « Intragroupe » ; les achats et charges internes se calculent avec SOMME.SI sur la colonne « Poste chez l\'acheteur ».',
+                 'Colonne D, le consolidé : cumul - élimination. Ligne 10 : résultat = chiffre d\'affaires - toutes les charges, pour chaque colonne.',
+                 'La mère détient 100 % de A et 80 % de B. En B13, les intérêts minoritaires : 20 % du résultat de la Filiale B (='+"'Filiale B'!B10*20%)."+' En B14, la part du groupe.',
+                 'Contrôle : les éliminations ne changent pas le résultat. Le résultat cumulé (B10) et le résultat consolidé (D10) doivent être égaux.'],
+                ['Chiffre d\'affaires consolidé (D5)', 'Intérêts minoritaires (B13)'],
+                'Une référence 3D suit l\'ordre des onglets : une feuille glissée entre Mère et Filiale B est automatiquement additionnée.')
+    ws0 = wb.active
+    for nom, vals in SOCIETES:
+        ws = wb.create_sheet(nom)
+        titre(ws, f'Compte de résultat 2026 · {nom}', 'Montants en euros')
+        entete(ws, 4, ['Poste', 'Montant'])
+        for i, (p, v) in enumerate(zip(POSTES, vals)):
+            case(ws.cell(row=5 + i, column=1), p); case(ws.cell(row=5 + i, column=2), v, euro=True)
+        case(ws['A10'], 'Résultat', gras=True); case(ws['B10'], '=B5-SUM(B6:B9)', euro=True, gras=True)
+        largeurs(ws, {'A': 32, 'B': 16})
+    wi = wb.create_sheet('Intragroupe')
+    titre(wi, 'Opérations entre sociétés du groupe', 'À éliminer en consolidation')
+    entete(wi, 4, ['Vendeur', 'Acheteur', 'Objet', 'Montant', 'Poste chez l\'acheteur'])
+    for i, row in enumerate(INTRA):
+        for j, v in enumerate(row):
+            case(wi.cell(row=5 + i, column=1 + j), v, euro=j == 3)
+    largeurs(wi, {'A': 12, 'B': 12, 'C': 24, 'D': 14, 'E': 22})
+    ws = wb.create_sheet('Consolidé')
+    titre(ws, 'Compte de résultat consolidé 2026', 'Mère + Filiale A (100 %) + Filiale B (80 %), intégration globale')
+    entete(ws, 4, ['Poste', 'Cumul des 3 sociétés', 'Éliminations', 'Consolidé'])
+    for i, p in enumerate(POSTES):
+        r = 5 + i
+        case(ws.cell(row=r, column=1), p)
+        case(ws.cell(row=r, column=2), f"=SUM('Mère:Filiale B'!B{r})" if corrige else None, a_remplir=True, euro=True)
+        el = '=SUM(Intragroupe!D5:D6)' if i == 0 else (f'=SUMIF(Intragroupe!$E$5:$E$6,A{r},Intragroupe!$D$5:$D$6)' if p in ('Achats consommés', 'Charges externes') else 0)
+        case(ws.cell(row=r, column=3), (el if corrige else None) if isinstance(el, str) else 0, a_remplir=isinstance(el, str), euro=True)
+        case(ws.cell(row=r, column=4), f'=B{r}-C{r}' if corrige else None, a_remplir=True, euro=True)
+    case(ws['A10'], 'Résultat', gras=True)
+    for col in 'BCD':
+        case(ws[f'{col}10'], f'={col}5-SUM({col}6:{col}9)' if corrige else None, a_remplir=True, euro=True, gras=True)
+    case(ws['A13'], 'Intérêts minoritaires (20 % de la Filiale B)', gras=True); case(ws['B13'], "='Filiale B'!B10*20%" if corrige else None, a_remplir=True, euro=True, gras=True)
+    case(ws['A14'], 'Résultat consolidé, part du groupe', gras=True); case(ws['B14'], '=D10-B13' if corrige else None, a_remplir=True, euro=True, gras=True)
+    largeurs(ws, {'A': 44, 'B': 20, 'C': 15, 'D': 15})
+    ca = sum(v[1][0] for v in SOCIETES) - sum(x[3] for x in INTRA)
+    res = {n: v[0] - sum(v[1:]) for n, v in SOCIETES}
+    mino = res['Filiale B'] * .2
+    if corrige:
+        ws['A16'] = f'Corrigé : chiffre d\'affaires consolidé {ca} € · résultat consolidé {sum(res.values())} € · minoritaires {mino:.0f} € · part du groupe {sum(res.values()) - mino:.0f} €.'
+        ws['A16'].font = Font(italic=True, color=VERT)
+    wb.active = len(wb.sheetnames) - 1   # ouverture sur la feuille « Consolidé » ; « Consignes » reste en premier
+    return wb, {'ca': ca, 'mino': mino, 'res': sum(res.values())}
+
+
 if __name__ == '__main__':
     for num, f in [(1, atelier1), (2, atelier2), (3, atelier3)]:
         f(False).save(os.path.join(ICI, f'atelier-{num}.xlsx'))
@@ -766,7 +991,7 @@ if __name__ == '__main__':
     wb.save(os.path.join(ICI, 'atelier-4.xlsx'))
     atelier4(True)[0].save(os.path.join(ICI, 'atelier-4-corrige.xlsx'))
     print('ok', 'classe6 =', n6, 'classe4 =', n4)
-    for num, f in [(5, atelier5), (6, atelier6), (7, atelier7), (8, atelier8), (9, atelier9), (10, atelier10), (11, atelier11), (12, atelier12)]:
+    for num, f in [(5, atelier5), (6, atelier6), (7, atelier7), (8, atelier8), (9, atelier9), (10, atelier10), (11, atelier11), (12, atelier12), (13, atelier13), (14, atelier14), (15, atelier15), (16, atelier16)]:
         f(False)[0].save(os.path.join(ICI, f'atelier-{num}.xlsx'))
         wb, rep = f(True)
         wb.save(os.path.join(ICI, f'atelier-{num}-corrige.xlsx'))

@@ -130,7 +130,8 @@ const BADGES = [
   ['xl1', 'X', 'Premier classeur', 'Réussir un atelier Excel', () => Object.keys(S.xl || {}).length >= 1],
   ['xl4', 'XL', 'Excel débutant', 'Réussir les ateliers Excel du niveau Débutant', () => xlFaits(1) >= xlTotal(1)],
   ['xl8', 'XL+', 'Excel intermédiaire', 'Réussir les ateliers Excel du niveau Intermédiaire', () => xlFaits(2) >= xlTotal(2)],
-  ['xl12', 'XL³', 'Excel avancé', 'Réussir les ateliers Excel du niveau Avancé', () => xlFaits(3) >= xlTotal(3)]
+  ['xl12', 'XL³', 'Excel avancé', 'Réussir les ateliers Excel du niveau Avancé', () => xlFaits(3) >= xlTotal(3)],
+  ['xl16', 'XL⁴', 'Excel confirmé', 'Réussir les ateliers Excel du niveau Confirmé', () => xlFaits(4) >= xlTotal(4)]
 ];
 function toast(t) {
   const Z = $('#toasts'), el = h(`<div class="toast">${esc(t)}</div>`);
@@ -302,7 +303,27 @@ const XL = {
   obj: 'Construisez le tableau de remboursement d\'un emprunt de 50 000 € à 4 % sur 5 ans, séparez intérêts et capital, et contrôlez les intérêts de la première année.',
   comp: ['VPM', 'CUMUL.INTER', 'Recopie sur 60 lignes'],
   v: [['9gs1AKmmym0', 'Tu connais la fonction VPM ?', 'La minute Excel', '2:18'], ['z1xA-TGQcXI', 'Tu connais la fonction CUMUL.INTER ?', 'La minute Excel', '3:12']],
-  d: [['Mensualité, au centime (B7)', 920.83, '€'], ['Intérêts de la première année (B8)', 1832.23, '€', .02]]}
+  d: [['Mensualité, au centime (B7)', 920.83, '€'], ['Intérêts de la première année (B8)', 1832.23, '€', .02]]},
+'m-sig': {niv: 4, n: 13, etape: 1, t: 'Les soldes intermédiaires de gestion en cascade', min: 20,
+  obj: 'À partir du compte de résultat 2026 de l\'atelier de Vania, calculez les soldes intermédiaires de gestion et la capacité d\'autofinancement, rapportez-les au chiffre d\'affaires et montrez-les dans un graphique en cascade.',
+  comp: ['Formules en cascade', 'Pourcentages', 'Graphique en cascade'],
+  v: [['PXY8LHGtY2k', 'Le graphique en cascade', 'Excel Exercice', '2:59'], ['I4TgcWe0UII', 'Créer un graphique en cascade', 'WayToLearnX', '1:34']],
+  d: [['Excédent brut d\'exploitation', 44000, '€'], ['Capacité d\'autofinancement', 35500, '€']]},
+'m-analyse': {niv: 4, n: 14, etape: 2, t: 'Analyser le bilan : fonds de roulement, BFR, ratios', min: 25,
+  obj: 'Comparez 2025 et 2026 : fonds de roulement, BFR, trésorerie nette, délais de paiement et capacité de remboursement, sans afficher d\'erreur quand un ratio est impossible.',
+  comp: ['SIERREUR', 'Ratios', 'Mise en forme conditionnelle', 'Comparaison sur deux ans'],
+  v: [['clOUnTJAV6c', 'La formule SIERREUR', 'Kévin Brundu', '3:01'], ['QZfzTtHh84E', 'Anticiper les erreurs avec SIERREUR', 'Formation Excel & VBA par Joël Garbe', '1:43']],
+  d: [['Trésorerie nette 2026 (G7)', -5000, '€'], ['Délai clients 2026 (G9)', 60, 'jours']]},
+'m-cloture': {niv: 4, n: 15, etape: 2, t: 'L\'impôt sur les sociétés et l\'affectation du résultat', min: 20,
+  obj: 'Passez du résultat comptable au résultat fiscal, calculez l\'impôt avec le taux réduit des PME, puis répartissez le bénéfice entre réserve légale, dividendes et report à nouveau.',
+  comp: ['MIN et MAX', 'SI', 'Scénario Oui / Non'],
+  v: [['UxYYv2GAcgo', 'Tu connais les fonctions MIN et MAX ?', 'La minute Excel', '1:16'], ['5lCvmWm6wTc', 'Tu connais la fonction SI ?', 'La minute Excel', '3:49']],
+  d: [['Impôt sur les sociétés dû (B15)', 21200, '€'], ['Dotation à la réserve légale (B20)', 2000, '€']]},
+'m-consolidation': {niv: 4, n: 16, etape: 3, t: 'Consolider trois sociétés avec des références 3D', min: 25,
+  obj: 'Cumulez les comptes de résultat de la mère et de ses deux filiales avec une seule formule par ligne, éliminez les opérations internes au groupe, puis partagez le résultat entre le groupe et les minoritaires.',
+  comp: ['Références 3D', 'Plusieurs feuilles', 'SOMME.SI'],
+  v: [['aCEsKiR2sqY', 'Références 3D : additionner plusieurs feuilles', 'Docteur Excel', '3:02'], ['uOUTzY0rx6Y', 'Additionner plusieurs onglets', 'Alex Nilly', '0:48']],
+  d: [['Chiffre d\'affaires consolidé (D5)', 800000, '€'], ['Intérêts minoritaires (B13)', 3000, '€']]}
 };
 const NBXL = Object.keys(XL).length;
 const CHEZ_NOUS = /(^|\.)nahkeo\.fr$|github\.io$|^localhost$|^127\.0\.0\.1$/.test(location.hostname);
@@ -393,7 +414,7 @@ function tableau() {
     ${stat('Série', serie() + ' j', 'jours consécutifs')}
     ${stat('Temps d\'étude', mn >= 60 ? Math.floor(mn / 60) + ' h ' + String(mn % 60).padStart(2, '0') : mn + ' min', 'temps actif cumulé')}
     ${stat('Modules validés', nm + ' / ' + MODULES.length, '')}
-    ${stat('Ateliers Excel', xlFaits() + ' / ' + NBXL, [1, 2, 3].map(nv => NIVEAUX[nv - 1].t + ' ' + xlFaits(nv) + '/' + xlTotal(nv)).join(' · '))}
+    ${stat('Ateliers Excel', xlFaits() + ' / ' + NBXL, NIVEAUX.map(N => N.t + ' ' + xlFaits(N.n) + '/' + xlTotal(N.n)).join(' · '))}
     ${stat('Score moyen', scoreMoyen() === null ? '–' : scoreMoyen() + ' %', 'réussite du premier coup')}
     ${(() => { const N = NIVEAUX.find(x => !(S.exam[x.n] && S.exam[x.n].ok)); if (!N) return stat('Certifications', '4 / 4', 'toutes obtenues'); const M = MODULES.filter(m => m.niv === N.n), p = Math.round(100 * sum(M, faits) / sum(M, m => m.ex.length)); return stat('Prochaine certification', N.t, p + ' % du niveau fait · <a href="#examen">examen</a>'); })()}
     ${stat('Dernière activité', S.dern ? new Date(S.dern.t).toLocaleDateString('fr-FR', {day: 'numeric', month: 'short'}) : '–', S.dern ? esc(S.dern.q) : 'Rien pour l\'instant')}
