@@ -131,7 +131,8 @@ const BADGES = [
   ['xl4', 'XL', 'Excel débutant', 'Réussir les ateliers Excel du niveau Débutant', () => xlFaits(1) >= xlTotal(1)],
   ['xl8', 'XL+', 'Excel intermédiaire', 'Réussir les ateliers Excel du niveau Intermédiaire', () => xlFaits(2) >= xlTotal(2)],
   ['xl12', 'XL³', 'Excel avancé', 'Réussir les ateliers Excel du niveau Avancé', () => xlFaits(3) >= xlTotal(3)],
-  ['xl16', 'XL⁴', 'Excel confirmé', 'Réussir les ateliers Excel du niveau Confirmé', () => xlFaits(4) >= xlTotal(4)]
+  ['xl16', 'XL⁴', 'Excel confirmé', 'Réussir les ateliers Excel du niveau Confirmé', () => xlFaits(4) >= xlTotal(4)],
+  ['xl20', 'LUM', 'Dossier Lumen bouclé', 'Réussir les 4 ateliers Excel du cas de synthèse', () => xlFaits('syn') >= xlTotal('syn')]
 ];
 function toast(t) {
   const Z = $('#toasts'), el = h(`<div class="toast">${esc(t)}</div>`);
@@ -323,26 +324,54 @@ const XL = {
   obj: 'Cumulez les comptes de résultat de la mère et de ses deux filiales avec une seule formule par ligne, éliminez les opérations internes au groupe, puis partagez le résultat entre le groupe et les minoritaires.',
   comp: ['Références 3D', 'Plusieurs feuilles', 'SOMME.SI'],
   v: [['aCEsKiR2sqY', 'Références 3D : additionner plusieurs feuilles', 'Docteur Excel', '3:02'], ['uOUTzY0rx6Y', 'Additionner plusieurs onglets', 'Alex Nilly', '0:48']],
-  d: [['Chiffre d\'affaires consolidé (D5)', 800000, '€'], ['Intérêts minoritaires (B13)', 3000, '€']]}
+  d: [['Chiffre d\'affaires consolidé (D5)', 800000, '€'], ['Intérêts minoritaires (B13)', 3000, '€']]},
+'m-synthese#17': {mod: 'm-synthese', syn: true, niv: 4, n: 17, etape: 0, t: 'Dossier Lumen 1/4 · Saisir le journal de décembre sans erreur', min: 25,
+  obj: 'Enregistrez les écritures de décembre d\'Atelier Lumen en choisissant chaque compte dans une liste déroulante, affichez son intitulé automatiquement et contrôlez que chaque pièce est équilibrée.',
+  comp: ['Validation des données', 'RECHERCHEV', 'SOMME.SI avec joker *'],
+  v: [['cLfXj60q4wc', 'Créer une liste déroulante', 'La minute Excel', '0:53'], ['hUb5ChVGtIA', 'Comment créer une liste déroulante', 'Docteur Excel', '2:34']],
+  d: [['Total des débits sur les comptes de classe 6 (K14)', 5550, '€'], ['Total des débits sur les comptes de classe 4 (K15)', 25120, '€']]},
+'m-synthese#18': {mod: 'm-synthese', syn: true, niv: 4, n: 18, etape: 0, t: 'Dossier Lumen 2/4 · La balance de clôture en tableau croisé dynamique', min: 25,
+  obj: 'Réunissez les soldes au 30 novembre et les écritures de décembre dans un seul journal, obtenez la balance au 31 décembre avec un tableau croisé dynamique, puis contrôlez-la par formule.',
+  comp: ['Tableau croisé dynamique', 'SOMME.SI.ENS', 'Contrôle d\'équilibre'],
+  v: [['E8tizMO74HU', 'Le tableau croisé dynamique', 'Alphorm', '2:28'], ['xWnJJoWBT8A', 'Créer un tableau croisé dynamique : les bases', 'OfficeEnPratique', '3:49']],
+  d: [['Solde du compte 411 Clients au 31 décembre', 33200, '€'], ['Total des produits de l\'exercice (K37)', 180000, '€']]},
+'m-synthese#19': {mod: 'm-synthese', syn: true, niv: 4, n: 19, etape: 0, t: 'Dossier Lumen 3/4 · Du solde des comptes au résultat et au bilan', min: 30,
+  obj: 'Construisez automatiquement le compte de résultat et le bilan simplifiés d\'Atelier Lumen à partir de la balance au 31 décembre, avec SOMME.SI et le joker *.',
+  comp: ['SOMME.SI avec joker', 'SOMME.SI.ENS à plusieurs critères', 'Contrôle actif = passif'],
+  v: [['SqJmG4c1bLY', 'Tu connais la fonction SOMME.SI ?', 'La minute Excel', '2:35'], ['N8N0PKuJZ80', 'Comment utiliser la fonction SOMME.SI', 'PolExcelle', '2:06']],
+  d: [['Résultat de l\'exercice (F7)', 1750, '€'], ['Total du bilan (F15)', 148610, '€']]},
+'m-synthese#20': {mod: 'm-synthese', syn: true, niv: 4, n: 20, etape: 0, t: 'Dossier Lumen 4/4 · Le tableau de bord de l\'année', min: 25,
+  obj: 'Présentez le chiffre d\'affaires 2026 mois par mois : cumul, comparaison à l\'objectif, meilleur mois trouvé automatiquement, barres de données et graphique combiné.',
+  comp: ['INDEX et EQUIV', 'MAX', 'Barres de données', 'Graphique combiné'],
+  v: [['yOdcP_AEf2Y', 'Utiliser INDEX et EQUIV ensemble', 'Formation Excel', '1:18'], ['0SA1nTmRLhE', 'Faire un graphique combiné', 'BricolExcel', '1:25']],
+  d: [['Meilleur chiffre d\'affaires mensuel (F9)', 23500, '€'], ['Taux de réalisation de l\'objectif (F7)', 102.9, '%', .051]]}
 };
 const NBXL = Object.keys(XL).length;
 const CHEZ_NOUS = /(^|\.)nahkeo\.fr$|github\.io$|^localhost$|^127\.0\.0\.1$/.test(location.hostname);
 const bouton = (f, txt, cls, cache) => CHEZ_NOUS
   ? `<button type="button" class="btn${cls}" data-f="${f}"${cache ? ' hidden' : ''}>${txt}</button>`
   : `<a class="btn${cls}" data-f="${f}" href="https://compta.nahkeo.fr/${f}" target="_blank" rel="noopener"${cache ? ' hidden' : ''}>${txt}</a>`;
-const xlFaits = niv => Object.keys(XL).filter(k => S.xl[k] && (!niv || XL[k].niv === niv)).length;
-const xlTotal = niv => Object.keys(XL).filter(k => XL[k].niv === niv).length;
+const xlDe = niv => Object.keys(XL).filter(k => niv === 'syn' ? XL[k].syn : !XL[k].syn && XL[k].niv === niv);
+const xlFaits = niv => (niv ? xlDe(niv) : Object.keys(XL)).filter(k => S.xl[k]).length;
+const xlTotal = niv => xlDe(niv).length;
 A.fichier = async (chemin, nom, fb) => {
   try {
     const r = await fetch(chemin); if (!r.ok) throw new Error(r.status);
     await A.telecharger(nom, await r.blob(), fb);
   } catch (e) { if (fb) say(fb, false, 'Le fichier n\'a pas pu être récupéré. Vérifiez la connexion et réessayez.'); }
 };
-A.atelierXL = (id, k) => {
-  const x = XL[id]; if (!x || x.etape !== k) return null;
+A.atelierXL = (mod, k) => {
+  const K = Object.keys(XL).filter(key => (XL[key].mod || key) === mod && XL[key].etape === k);
+  if (!K.length) return null;
+  const f = document.createDocumentFragment();
+  K.forEach(key => f.append(carteXL(key)));
+  return f;
+};
+const carteXL = id => {
+  const x = XL[id];
   const fait = !!S.xl[id];
   const el = h(`<section class="xl${fait ? ' fait' : ''}" aria-label="Atelier Excel ${x.n}">
-    <header><span class="xl-ico" aria-hidden="true">X</span><div><small>Atelier Excel ${x.n} sur ${NBXL} · ${x.min} min · niveau ${NIVEAUX[x.niv - 1].t}</small><h3>${x.t}</h3></div><span class="etat">${fait ? 'Réussi' : ''}</span></header>
+    <header><span class="xl-ico" aria-hidden="true">X</span><div><small>Atelier Excel ${x.n} sur ${NBXL} · ${x.min} min · ${x.syn ? 'cas de synthèse' : 'niveau ' + NIVEAUX[x.niv - 1].t}</small><h3>${x.t}</h3></div><span class="etat">${fait ? 'Réussi' : ''}</span></header>
     <p>${x.obj}</p>
     <div class="xl-comp">${x.comp.map(c => `<span>${c}</span>`).join('')}</div>
     <ol class="xl-pas"><li><b>Regardez</b> le tuto, court.</li><li><b>Téléchargez</b> le classeur : les consignes sont dans la première feuille, l'exercice dans la seconde, les cellules jaunes à compléter.</li><li><b>Reportez</b> vos résultats ici pour valider l'atelier.</li></ol>
@@ -414,7 +443,7 @@ function tableau() {
     ${stat('Série', serie() + ' j', 'jours consécutifs')}
     ${stat('Temps d\'étude', mn >= 60 ? Math.floor(mn / 60) + ' h ' + String(mn % 60).padStart(2, '0') : mn + ' min', 'temps actif cumulé')}
     ${stat('Modules validés', nm + ' / ' + MODULES.length, '')}
-    ${stat('Ateliers Excel', xlFaits() + ' / ' + NBXL, NIVEAUX.map(N => N.t + ' ' + xlFaits(N.n) + '/' + xlTotal(N.n)).join(' · '))}
+    ${stat('Ateliers Excel', xlFaits() + ' / ' + NBXL, NIVEAUX.map(N => N.t + ' ' + xlFaits(N.n) + '/' + xlTotal(N.n)).join(' · ') + ' · Synthèse ' + xlFaits('syn') + '/' + xlTotal('syn'))}
     ${stat('Score moyen', scoreMoyen() === null ? '–' : scoreMoyen() + ' %', 'réussite du premier coup')}
     ${(() => { const N = NIVEAUX.find(x => !(S.exam[x.n] && S.exam[x.n].ok)); if (!N) return stat('Certifications', '4 / 4', 'toutes obtenues'); const M = MODULES.filter(m => m.niv === N.n), p = Math.round(100 * sum(M, faits) / sum(M, m => m.ex.length)); return stat('Prochaine certification', N.t, p + ' % du niveau fait · <a href="#examen">examen</a>'); })()}
     ${stat('Dernière activité', S.dern ? new Date(S.dern.t).toLocaleDateString('fr-FR', {day: 'numeric', month: 'short'}) : '–', S.dern ? esc(S.dern.q) : 'Rien pour l\'instant')}

@@ -983,6 +983,255 @@ def atelier16(corrige):
     return wb, {'ca': ca, 'mino': mino, 'res': sum(res.values())}
 
 
+# ═══════════════════════ CAS DE SYNTHÈSE : ATELIER LUMEN ═══════════════════════
+from openpyxl.worksheet.datavalidation import DataValidation
+from openpyxl.formatting.rule import DataBarRule
+
+PLAN_LUMEN = [('101', 'Capital'), ('1061', 'Réserve légale'), ('164', 'Emprunts'), ('2154', 'Matériel industriel'),
+              ('28154', 'Amortissements du matériel industriel'), ('31', 'Stocks de matières premières'), ('401', 'Fournisseurs'),
+              ('404', 'Fournisseurs d\'immobilisations'), ('411', 'Clients'), ('416', 'Clients douteux'), ('431', 'Sécurité sociale'),
+              ('44562', 'TVA déductible sur immobilisations'), ('44566', 'TVA déductible sur biens et services'), ('44567', 'Crédit de TVA à reporter'),
+              ('44571', 'TVA collectée'), ('486', 'Charges constatées d\'avance'), ('491', 'Dépréciation des comptes clients'), ('512', 'Banque'),
+              ('601', 'Achats de matières premières'), ('6061', 'Fournitures non stockables'), ('6132', 'Locations immobilières'),
+              ('616', 'Primes d\'assurance'), ('641', 'Rémunérations du personnel'), ('645', 'Cotisations sociales patronales'),
+              ('6611', 'Intérêts des emprunts'), ('6811', 'Dotations aux amortissements'), ('6817', 'Dotations aux dépréciations des actifs circulants'),
+              ('701', 'Ventes de produits finis')]
+LIB = dict(PLAN_LUMEN)
+SOLDES_NOV = [('101', 0, 60000), ('1061', 0, 4000), ('164', 0, 40000), ('2154', 45000, 0), ('28154', 0, 15000), ('31', 9000, 0),
+              ('401', 0, 12500), ('411', 26000, 0), ('416', 2400, 0), ('431', 0, 4200), ('512', 46600, 0), ('601', 61000, 0),
+              ('6061', 8650, 0), ('6132', 30000, 0), ('616', 9000, 0), ('641', 46000, 0), ('645', 18400, 0), ('6611', 1650, 0), ('701', 0, 168000)]
+# pièces de décembre : (pièce, date, opération, [(compte, débit, crédit)])
+PIECES_DEC = [
+    ('P1', '03/12', 'Vente de produits finis, 12 000 € HT', [('411', 14400, 0), ('701', 0, 12000), ('44571', 0, 2400)]),
+    ('P2', '08/12', 'Achat de matières, 3 800 € HT net de remise', [('601', 3800, 0), ('44566', 760, 0), ('401', 0, 4560)]),
+    ('P3', '10/12', 'Règlement de la moitié de la facture P1', [('512', 7200, 0), ('411', 0, 7200)]),
+    ('P4', '01/10', 'Machine acquise en octobre, 18 000 € HT', [('2154', 18000, 0), ('44562', 3600, 0), ('404', 0, 21600)]),
+    ('P5', '31/12', 'Dotation aux amortissements de la machine', [('6811', 750, 0), ('28154', 0, 750)]),
+    ('P6', '31/12', 'Loyer : part de janvier et février', [('486', 2000, 0), ('6132', 0, 2000)]),
+    ('P7', '31/12', 'Dépréciation d\'un client douteux', [('6817', 1000, 0), ('491', 0, 1000)]),
+    ('P8', '31/12', 'Déclaration de TVA de décembre', [('44571', 2400, 0), ('44567', 1960, 0), ('44566', 0, 760), ('44562', 0, 3600)]),
+]
+LIGNES_DEC = [(p, d, o, c, de, cr) for p, d, o, L in PIECES_DEC for c, de, cr in L]
+
+
+def balance_finale():
+    b = {}
+    for c, d, cr in SOLDES_NOV:
+        b[c] = b.get(c, 0) + d - cr
+    for _, _, _, c, d, cr in LIGNES_DEC:
+        b[c] = b.get(c, 0) + d - cr
+    assert sum(b.values()) == 0
+    return dict(sorted(b.items()))
+
+
+def consignes_s(wb, *a):
+    consignes(wb, *a)
+    wb.active['A2'] = 'Partie Double · atelier Excel · cas de synthèse Atelier Lumen'
+
+
+def feuille_plan(wb):
+    wp = wb.create_sheet('Plan')
+    titre(wp, 'Plan de comptes d\'Atelier Lumen')
+    entete(wp, 3, ['Compte', 'Intitulé'])
+    for i, (c, l) in enumerate(PLAN_LUMEN):
+        x = case(wp.cell(row=4 + i, column=1), c); x.number_format = '@'
+        case(wp.cell(row=4 + i, column=2), l)
+    largeurs(wp, {'A': 10, 'B': 44})
+    return f'Plan!$A$4:$A${3 + len(PLAN_LUMEN)}', f'Plan!$A$4:$B${3 + len(PLAN_LUMEN)}'
+
+
+# ─────────────── Atelier 17 : saisir le journal avec des listes déroulantes ───────────────
+def atelier17(corrige):
+    wb = Workbook()
+    consignes_s(wb, 'Atelier 17 · Saisir le journal de décembre sans erreur',
+                'Enregistrer les écritures de décembre d\'Atelier Lumen en choisissant chaque compte dans une liste déroulante, afficher automatiquement son intitulé et contrôler que chaque pièce est équilibrée.',
+                ['Ouvrez la feuille « Exercice ». Les montants et les opérations sont saisis ; la colonne Compte (D) est vide.',
+                 'Sélectionnez D5:D' + str(4 + len(LIGNES_DEC)) + ', puis Données > Validation des données > Autoriser : Liste, Source : =Plan!$A$4:$A$31. Une flèche apparaît dans chaque cellule.',
+                 'Choisissez le bon compte pour chaque ligne, en vous aidant de la leçon et de la feuille « Plan ».',
+                 'En E5, affichez l\'intitulé du compte : =SI(D5="";"";RECHERCHEV(D5;Plan!$A$4:$B$31;2;FAUX)). Recopiez vers le bas.',
+                 'Dans le tableau de contrôle (colonnes J à M), calculez pour chaque pièce le total débit et le total crédit avec SOMME.SI sur la colonne Pièce, puis « OK » ou « Erreur » avec SI.',
+                 f'En K14 et K15, totalisez les débits passés sur les comptes de charges et sur les comptes de tiers : =SOMME.SI(D5:D{4 + len(LIGNES_DEC)};"6*";F5:F{4 + len(LIGNES_DEC)}), puis "4*". L\'astérisque veut dire « commence par ».'],
+                ['Total des débits sur les comptes de classe 6 (K14)', 'Total des débits sur les comptes de classe 4 (K15)'],
+                'Les numéros de compte sont saisis comme du texte (format Texte) : c\'est ce qui permet à "6*" de reconnaître tous les comptes qui commencent par 6.')
+    ws = wb.create_sheet('Exercice')
+    plage_cpt, plage_plan = feuille_plan(wb)
+    wb.move_sheet('Plan', offset=1)
+    titre(ws, 'Journal de décembre · Atelier Lumen', 'TVA à 20 % · choisissez les comptes dans la liste')
+    entete(ws, 4, ['Pièce', 'Date', 'Opération', 'Compte', 'Intitulé', 'Débit', 'Crédit'])
+    n = len(LIGNES_DEC); der = 4 + n
+    dv = DataValidation(type='list', formula1=f'={plage_cpt}', allow_blank=True, showErrorMessage=True,
+                        errorTitle='Compte inconnu', error='Choisissez un compte de la liste (feuille Plan).')
+    ws.add_data_validation(dv)
+    for i, (p, d, o, c, de, cr) in enumerate(LIGNES_DEC):
+        r = 5 + i
+        case(ws.cell(row=r, column=1), p); case(ws.cell(row=r, column=2), d); case(ws.cell(row=r, column=3), o)
+        x = case(ws.cell(row=r, column=4), c if corrige else None, a_remplir=True); x.number_format = '@'
+        if corrige:
+            dv.add(f'D{r}')
+        case(ws.cell(row=r, column=5), f'=IF(D{r}="","",VLOOKUP(D{r},{plage_plan},2,FALSE))' if corrige else None, a_remplir=True)
+        case(ws.cell(row=r, column=6), de or None, euro=True); case(ws.cell(row=r, column=7), cr or None, euro=True)
+    bloc_entete(ws, 4, 10, ['Pièce', 'Total débit', 'Total crédit', 'Contrôle'])
+    for k, (p, *_) in enumerate(PIECES_DEC):
+        r = 5 + k
+        case(ws.cell(row=r, column=10), p)
+        case(ws.cell(row=r, column=11), f'=SUMIF($A$5:$A${der},J{r},$F$5:$F${der})' if corrige else None, a_remplir=True, euro=True)
+        case(ws.cell(row=r, column=12), f'=SUMIF($A$5:$A${der},J{r},$G$5:$G${der})' if corrige else None, a_remplir=True, euro=True)
+        case(ws.cell(row=r, column=13), f'=IF(K{r}=L{r},"OK","Erreur")' if corrige else None, a_remplir=True)
+    case(ws['J14'], 'Débits classe 6', gras=True); case(ws['K14'], f'=SUMIF(D5:D{der},"6*",F5:F{der})' if corrige else None, a_remplir=True, euro=True, gras=True)
+    case(ws['J15'], 'Débits classe 4', gras=True); case(ws['K15'], f'=SUMIF(D5:D{der},"4*",F5:F{der})' if corrige else None, a_remplir=True, euro=True, gras=True)
+    largeurs(ws, {'A': 7, 'B': 7, 'C': 42, 'D': 10, 'E': 36, 'F': 12, 'G': 12, 'H': 3, 'I': 3, 'J': 16, 'K': 14, 'L': 14, 'M': 11})
+    d6 = sum(de for *_, c, de, cr in LIGNES_DEC if c.startswith('6'))
+    d4 = sum(de for *_, c, de, cr in LIGNES_DEC if c.startswith('4'))
+    if corrige:
+        ws['J17'] = f'Corrigé : débits de classe 6 = {d6} € · débits de classe 4 = {d4} €.'
+        ws['J17'].font = Font(italic=True, color=VERT)
+    wb.active = 1
+    return wb, {'d6': d6, 'd4': d4}
+
+
+# ─────────────── Atelier 18 : la balance en tableau croisé dynamique ───────────────
+def atelier18(corrige):
+    wb = Workbook()
+    bf = balance_finale()
+    consignes_s(wb, 'Atelier 18 · La balance de clôture en tableau croisé dynamique',
+                'Réunir les soldes au 30 novembre et les écritures de décembre dans un seul journal, puis obtenir la balance au 31 décembre avec un tableau croisé dynamique, et la contrôler par formule.',
+                ['Ouvrez la feuille « Exercice ». Le journal commence par les soldes au 30 novembre (pièce « AN »), suivis des écritures de décembre.',
+                 'Cliquez dans le journal, puis Insertion > Tableau croisé dynamique > Nouvelle feuille.',
+                 'Glissez « Compte » en Lignes, puis « Débit » et « Crédit » en Valeurs (Somme). Vous obtenez la balance.',
+                 'Dans la feuille « Exercice », colonne K, calculez le solde de chaque compte avec SOMME.SI.ENS : =SOMME.SI.ENS($E$5:$E$60;$D$5:$D$60;J5)-SOMME.SI.ENS($F$5:$F$60;$D$5:$D$60;J5). Positif = débiteur, négatif = créditeur.',
+                 'En K35, la somme de tous les soldes doit valoir 0 : c\'est la preuve que la balance est équilibrée.',
+                 'En K37, le total des produits (classe 7) : =-SOMME.SI(J5:J33;"7*";K5:K33).'],
+                ['Solde du compte 411 Clients au 31 décembre', 'Total des produits de l\'exercice (K37)'],
+                'Un tableau croisé dynamique ne se met pas à jour tout seul : après une modification du journal, clic droit sur le tableau > Actualiser.')
+    ws = wb.create_sheet('Exercice')
+    titre(ws, 'Journal de l\'exercice 2026 · Atelier Lumen', 'Pièce AN : soldes au 30 novembre ; pièces P1 à P8 : décembre')
+    entete(ws, 4, ['Pièce', 'Date', 'Opération', 'Compte', 'Débit', 'Crédit'])
+    lignes = [('AN', '30/11', 'Solde au 30 novembre', c, d, cr) for c, d, cr in SOLDES_NOV] + LIGNES_DEC
+    for i, (p, d, o, c, de, cr) in enumerate(lignes):
+        r = 5 + i
+        case(ws.cell(row=r, column=1), p); case(ws.cell(row=r, column=2), d); case(ws.cell(row=r, column=3), o)
+        x = case(ws.cell(row=r, column=4), c); x.number_format = '@'
+        case(ws.cell(row=r, column=5), de or None, euro=True); case(ws.cell(row=r, column=6), cr or None, euro=True)
+    der = 4 + len(lignes)
+    assert der <= 60
+    bloc_entete(ws, 4, 9, ['Intitulé', 'Compte', 'Solde (+ débiteur, − créditeur)'])
+    comptes = list(bf.keys())
+    assert len(comptes) <= 29
+    for k, c in enumerate(comptes):
+        r = 5 + k
+        case(ws.cell(row=r, column=9), LIB[c])
+        x = case(ws.cell(row=r, column=10), c); x.number_format = '@'
+        case(ws.cell(row=r, column=11), f'=SUMIFS($E$5:$E$60,$D$5:$D$60,J{r})-SUMIFS($F$5:$F$60,$D$5:$D$60,J{r})' if corrige else None, a_remplir=True, euro=True)
+    case(ws['J35'], 'Somme des soldes', gras=True); case(ws['K35'], '=SUM(K5:K33)' if corrige else None, a_remplir=True, euro=True, gras=True)
+    case(ws['J37'], 'Total des produits', gras=True); case(ws['K37'], '=-SUMIF(J5:J33,"7*",K5:K33)' if corrige else None, a_remplir=True, euro=True, gras=True)
+    largeurs(ws, {'A': 7, 'B': 7, 'C': 40, 'D': 9, 'E': 13, 'F': 13, 'G': 3, 'H': 3, 'I': 40, 'J': 10, 'K': 26})
+    produits = -sum(v for c, v in bf.items() if c.startswith('7'))
+    if corrige:
+        ws['I39'] = f'Corrigé : solde 411 = {bf["411"]} € (débiteur) · total des produits = {produits} € · somme des soldes = 0.'
+        ws['I39'].font = Font(italic=True, color=VERT)
+    wb.active = 1
+    return wb, {'s411': bf['411'], 'produits': produits}
+
+
+# ─────────────── Atelier 19 : compte de résultat et bilan à partir de la balance ───────────────
+def atelier19(corrige):
+    wb = Workbook()
+    bf = balance_finale()
+    consignes_s(wb, 'Atelier 19 · Du solde des comptes au compte de résultat et au bilan',
+                'Construire automatiquement le compte de résultat et le bilan simplifiés d\'Atelier Lumen à partir de la balance au 31 décembre, avec SOMME.SI et le joker *.',
+                ['Ouvrez la feuille « Exercice ». La balance est à gauche : compte (texte) et solde (+ débiteur, − créditeur).',
+                 'Total des charges (F5) : =SOMME.SI(A5:A33;"6*";C5:C33). Total des produits (F6) : =-SOMME.SI(A5:A33;"7*";C5:C33). Résultat (F7) : produits - charges.',
+                 'Actif immobilisé net (F11) : =SOMME.SI(A5:A33;"2*";C5:C33). Les amortissements (28…) sont créditeurs : ils viennent en moins.',
+                 'Stocks (F12) avec "3*". Créances (F13) : =SOMME.SI.ENS(C5:C33;A5:A33;"4*";C5:C33;">0")+SOMME.SI(A5:A33;"49*";C5:C33). Trésorerie (F14) avec "5*". Total actif en F15.',
+                 'Capitaux propres (F18) : =-SOMME.SI(A5:A33;"1*";C5:C33)+F7-F19, en mettant les emprunts (164) à part en F19 : =-SOMME.SI(A5:A33;"16*";C5:C33). Dettes (F20) : =-SOMME.SI.ENS(C5:C33;A5:A33;"4*";A5:A33;"<>49*";C5:C33;"<0").',
+                 'Total passif en F21. Contrôle en F23 : total actif - total passif doit valoir 0.'],
+                ['Résultat de l\'exercice (F7)', 'Total du bilan (F15)'],
+                'Le résultat n\'apparaît dans aucun compte de la balance avant la clôture : on l\'ajoute aux capitaux propres, et le bilan s\'équilibre.')
+    ws = wb.create_sheet('Exercice')
+    titre(ws, 'Balance, compte de résultat et bilan au 31 décembre 2026', 'Atelier Lumen · montants en euros')
+    entete(ws, 4, ['Compte', 'Intitulé', 'Solde'])
+    for k, (c, v) in enumerate(bf.items()):
+        r = 5 + k
+        x = case(ws.cell(row=r, column=1), c); x.number_format = '@'
+        case(ws.cell(row=r, column=2), LIB[c]); case(ws.cell(row=r, column=3), v, euro=True)
+    R = 'A5:A33'; V = 'C5:C33'
+    lignes = [(4, 'Compte de résultat', None), (5, 'Total des charges', f'=SUMIF({R},"6*",{V})'), (6, 'Total des produits', f'=-SUMIF({R},"7*",{V})'),
+              (7, 'Résultat de l\'exercice', '=F6-F5'), (10, 'Bilan · actif', None), (11, 'Actif immobilisé net', f'=SUMIF({R},"2*",{V})'),
+              (12, 'Stocks', f'=SUMIF({R},"3*",{V})'), (13, 'Créances nettes', f'=SUMIFS({V},{R},"4*",{V},">0")+SUMIF({R},"49*",{V})'),
+              (14, 'Trésorerie', f'=SUMIF({R},"5*",{V})'), (15, 'Total actif', '=SUM(F11:F14)'), (17, 'Bilan · passif', None),
+              (18, 'Capitaux propres (résultat compris)', f'=-SUMIF({R},"1*",{V})+F7-F19'), (19, 'Emprunts', f'=-SUMIF({R},"16*",{V})'),
+              (20, 'Dettes', f'=-SUMIFS({V},{R},"4*",{R},"<>49*",{V},"<0")'), (21, 'Total passif', '=SUM(F18:F20)'), (23, 'Contrôle actif - passif', '=F15-F21')]
+    for r, l, f in lignes:
+        if f is None:
+            c = ws.cell(row=r, column=5, value=l); c.font = Font(bold=True, color='FFFFFF'); c.fill = PatternFill('solid', fgColor=VERT)
+            ws.cell(row=r, column=6).fill = PatternFill('solid', fgColor=VERT)
+            continue
+        g = l.startswith(('Résultat', 'Total', 'Contrôle'))
+        case(ws.cell(row=r, column=5), l, gras=g); case(ws.cell(row=r, column=6), f if corrige else None, a_remplir=True, euro=True, gras=g)
+    largeurs(ws, {'A': 9, 'B': 42, 'C': 14, 'D': 3, 'E': 34, 'F': 15})
+    ch = sum(v for c, v in bf.items() if c.startswith('6')); pr = -sum(v for c, v in bf.items() if c.startswith('7'))
+    res = pr - ch
+    actif = sum(v for c, v in bf.items() if c[0] in '235') + sum(v for c, v in bf.items() if c[0] == '4' and v > 0) + bf.get('491', 0)
+    dettes = -sum(v for c, v in bf.items() if c[0] == '4' and not c.startswith('49') and v < 0)
+    cp = -sum(v for c, v in bf.items() if c[0] == '1') + res + sum(v for c, v in bf.items() if c.startswith('16'))
+    emp = -sum(v for c, v in bf.items() if c.startswith('16'))
+    assert abs(actif - (cp + emp + dettes)) < .01, (actif, cp, emp, dettes)
+    if corrige:
+        ws['E25'] = f'Corrigé : charges {ch} € · produits {pr} € · résultat {res} € · total du bilan {actif} €.'
+        ws['E25'].font = Font(italic=True, color=VERT)
+    wb.active = 1
+    return wb, {'resultat': res, 'total_bilan': actif}
+
+
+# ─────────────── Atelier 20 : le tableau de bord de l'année ───────────────
+MOIS = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre']
+CA_MOIS = [11000, 12500, 14000, 15500, 16000, 17500, 13000, 9500, 16500, 19000, 23500, 12000]
+OBJECTIF = 175000
+
+
+def atelier20(corrige):
+    wb = Workbook()
+    consignes_s(wb, 'Atelier 20 · Le tableau de bord de l\'année',
+                'Présenter le chiffre d\'affaires 2026 d\'Atelier Lumen mois par mois : cumul, comparaison à l\'objectif, meilleur mois trouvé automatiquement, barres de données et graphique combiné.',
+                ['Ouvrez la feuille « Exercice ». Le chiffre d\'affaires de chaque mois est en B5:B16, l\'objectif annuel en F4.',
+                 'En C5, le cumul depuis janvier : =SOMME($B$5:B5). Seul le début de la plage est figé : recopiez jusqu\'en C16, la plage s\'agrandit.',
+                 'En D5, l\'objectif cumulé au prorata : =$F$4/12*(LIGNE()-4). LIGNE() renvoie le numéro de la ligne : 5 pour janvier, donc 1 mois. Recopiez jusqu\'en D16.',
+                 'En F6, le total de l\'année ; en F7, le taux de réalisation : =F6/F4, au format pourcentage avec une décimale.',
+                 'En F9, le meilleur chiffre d\'affaires : =MAX(B5:B16). En F10, le mois correspondant : =INDEX(A5:A16;EQUIV(F9;B5:B16;0)).',
+                 'Ajoutez des barres de données sur B5:B16 (Mise en forme conditionnelle > Barres de données), puis un graphique combiné : histogramme pour le CA mensuel, courbe pour le cumul.'],
+                ['Meilleur chiffre d\'affaires mensuel (F9)', 'Taux de réalisation de l\'objectif, en % avec une décimale (F7)'],
+                'EQUIV donne la position d\'une valeur dans une liste ; INDEX renvoie ce qui se trouve à cette position dans une autre liste. Ensemble, ils retrouvent le nom du meilleur mois.')
+    ws = wb.create_sheet('Exercice')
+    titre(ws, 'Tableau de bord 2026 · Atelier Lumen', 'Chiffre d\'affaires hors taxes, en euros')
+    entete(ws, 4, ['Mois', 'CA du mois', 'CA cumulé', 'Objectif cumulé'])
+    for i, (m, v) in enumerate(zip(MOIS, CA_MOIS)):
+        r = 5 + i
+        case(ws.cell(row=r, column=1), m); case(ws.cell(row=r, column=2), v, euro=True)
+        case(ws.cell(row=r, column=3), f'=SUM($B$5:B{r})' if corrige else None, a_remplir=True, euro=True)
+        case(ws.cell(row=r, column=4), '=$F$4/12*(ROW()-4)' if corrige else None, a_remplir=True, euro=True)
+    for r, l, f, fmt in [(4, 'Objectif annuel', OBJECTIF, EURO), (6, 'CA de l\'année', '=SUM(B5:B16)', EURO), (7, 'Taux de réalisation', '=F6/F4', '0.0%'),
+                         (9, 'Meilleur CA mensuel', '=MAX(B5:B16)', EURO), (10, 'Meilleur mois', '=INDEX(A5:A16,MATCH(F9,B5:B16,0))', '@')]:
+        case(ws.cell(row=r, column=5), l, gras=True)
+        formule = isinstance(f, str)
+        x = case(ws.cell(row=r, column=6), (f if corrige else None) if formule else f, a_remplir=formule, gras=True); x.number_format = fmt
+    if corrige:
+        ws.conditional_formatting.add('B5:B16', DataBarRule(start_type='min', end_type='max', color='17A35C'))
+        g = BarChart(); g.type = 'col'; g.title = 'Chiffre d\'affaires 2026'; g.height, g.width = 8, 18
+        g.add_data(Reference(ws, min_col=2, min_row=4, max_row=16), titles_from_data=True)
+        g.set_categories(Reference(ws, min_col=1, min_row=5, max_row=16))
+        l = LineChart(); l.add_data(Reference(ws, min_col=3, min_row=4, max_row=16), titles_from_data=True)
+        l.y_axis.axId = 200; l.y_axis.title = 'Cumul'; l.y_axis.crosses = 'max'
+        g += l
+        ws.add_chart(g, 'H4')
+    largeurs(ws, {'A': 12, 'B': 14, 'C': 14, 'D': 16, 'E': 24, 'F': 16})
+    tot = sum(CA_MOIS); best = max(CA_MOIS)
+    if corrige:
+        ws['A19'] = f'Corrigé : CA {tot} € · réalisation {tot / OBJECTIF * 100:.1f} % · meilleur mois {MOIS[CA_MOIS.index(best)]} ({best} €).'.replace('.', ',')
+        ws['A19'].font = Font(italic=True, color=VERT)
+    wb.active = 1
+    return wb, {'best': best, 'taux': round(tot / OBJECTIF * 100, 1), 'tot': tot}
+
+
 if __name__ == '__main__':
     for num, f in [(1, atelier1), (2, atelier2), (3, atelier3)]:
         f(False).save(os.path.join(ICI, f'atelier-{num}.xlsx'))
@@ -991,7 +1240,7 @@ if __name__ == '__main__':
     wb.save(os.path.join(ICI, 'atelier-4.xlsx'))
     atelier4(True)[0].save(os.path.join(ICI, 'atelier-4-corrige.xlsx'))
     print('ok', 'classe6 =', n6, 'classe4 =', n4)
-    for num, f in [(5, atelier5), (6, atelier6), (7, atelier7), (8, atelier8), (9, atelier9), (10, atelier10), (11, atelier11), (12, atelier12), (13, atelier13), (14, atelier14), (15, atelier15), (16, atelier16)]:
+    for num, f in [(5, atelier5), (6, atelier6), (7, atelier7), (8, atelier8), (9, atelier9), (10, atelier10), (11, atelier11), (12, atelier12), (13, atelier13), (14, atelier14), (15, atelier15), (16, atelier16), (17, atelier17), (18, atelier18), (19, atelier19), (20, atelier20)]:
         f(False)[0].save(os.path.join(ICI, f'atelier-{num}.xlsx'))
         wb, rep = f(True)
         wb.save(os.path.join(ICI, f'atelier-{num}-corrige.xlsx'))
