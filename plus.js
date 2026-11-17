@@ -466,12 +466,15 @@ function cartes() {
 
 /* ── Examens blancs chronométrés ── */
 const DUREE = 600, NBQ = 10, SEUIL = 7;
+/* Les examens se passent dans l'ordre : celui d'un niveau s'ouvre quand l'examen du niveau précédent est réussi */
+const examOuvert = n => n === 1 || !!(S.exam[n - 1] && S.exam[n - 1].ok);
 function examen() {
-  V.innerHTML = `<div class="etroit">${A.onglets('examen')}<h1 class="titre">Examen blanc</h1><p class="sous">${NBQ} questions, ${DUREE / 60} minutes, aucune correction avant la fin. Il faut ${SEUIL} bonnes réponses pour être reçu et obtenir le certificat du niveau.</p>
-  <div class="mods">${NIVEAUX.map(N => { const e = S.exam[N.n]; return `<div class="mod${e && e.ok ? ' fini' : ''}"><span class="k">Niveau ${N.n}</span><h3>${N.t}</h3><div class="av"><span>${e ? 'Meilleur score : ' + e.best + ' / ' + NBQ : 'Pas encore tenté'}</span></div><button type="button" class="btn" data-n="${N.n}">${e ? 'Repasser' : 'Commencer'}</button></div>`; }).join('')}</div></div>`;
+  V.innerHTML = `<div class="etroit">${A.onglets('examen')}<h1 class="titre">Examen blanc</h1><p class="sous">${NBQ} questions, ${DUREE / 60} minutes, aucune correction avant la fin. Il faut ${SEUIL} bonnes réponses pour être reçu et obtenir le certificat du niveau. Les examens se passent dans l'ordre : réussir celui d'un niveau ouvre le suivant.</p>
+  <div class="mods">${NIVEAUX.map(N => { const e = S.exam[N.n], o = examOuvert(N.n), P = NIVEAUX[N.n - 2]; return `<div class="mod${e && e.ok ? ' fini' : ''}${o ? '' : ' verrou'}"><span class="k">Niveau ${N.n}</span><h3>${N.t}</h3><div class="av"><span>${!o ? 'Réussissez d\'abord l\'examen ' + P.t : e ? 'Meilleur score : ' + e.best + ' / ' + NBQ + (e.ok ? ' · reçu' : '') : 'Pas encore tenté'}</span></div><button type="button" class="btn${o ? '' : ' sec'}" data-n="${N.n}"${o ? '' : ' disabled'}>${!o ? 'Verrouillé' : e ? 'Repasser' : 'Commencer'}</button></div>`; }).join('')}</div></div>`;
   $$('[data-n]').forEach(b => b.addEventListener('click', () => passer(+b.dataset.n)));
 }
 function passer(n) {
+  if (!examOuvert(n)) { examen(); return; }
   const N = NIVEAUX[n - 1], pool = MODULES.filter(m => m.niv === n).flatMap(m => m.ex.filter(e => (e.t === 'qcm' || e.t === 'calcul') && AUTONOME(e)));
   TEST.filter(q => q.niv === n).forEach(q => pool.push({t: 'qcm', q: q.q, o: q.o.slice(0, 3), r: q.r, e: ''}));
   const Q = melange(pool).slice(0, NBQ), rep = []; let reste = DUREE, fini = false;
