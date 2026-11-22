@@ -6,7 +6,7 @@ const A = window.PDA, {S, save, $, $$, h, esc, fmt, f0, num, sum, pick, uid, lab
 const {MODULES, NIVEAUX, LEXIQUE, PCG, TEST} = window.PD;
 
 /* ══════════ CONTENU ADDITIONNEL PAR MODULE ══════════
-   q : questions de Vania [étape, affirmation, vrai ?, explication] · v : recherches vidéo · s : [étape, schéma] */
+   q : questions de Naelys [étape, affirmation, vrai ?, explication] · v : recherches vidéo · s : [étape, schéma] */
 const flux = (X, leg) => `<figure class="sch"><div class="flux">${X.map(x => `<span>${x[0]}<small>${x[1] || ''}</small></span>`).join('<i aria-hidden="true">→</i>')}</div>${leg ? `<figcaption>${leg}</figcaption>` : ''}</figure>`;
 const blocs = (g, d, G, D, leg) => `<figure class="sch"><div class="blocs"><div class="ga"><h5>${g}</h5>${G.map(x => `<p><b>${x[0]}</b>${x[1]}</p>`).join('')}</div><div class="dr"><h5>${d}</h5>${D.map(x => `<p><b>${x[0]}</b>${x[1]}</p>`).join('')}</div></div><figcaption>${leg}</figcaption></figure>`;
 window.PD.PLUS = {
@@ -212,7 +212,7 @@ const use = n => caps[n] || (caps[n] = (window.claude && window.claude.use ? win
 
 /* ══════════ ÉLÉMENTS DE LEÇON ══════════ */
 A.bulle = (q, key) => {
-  const el = h(`<div class="dial"><div class="av" aria-hidden="true">V</div><div class="bul"><p><b>Vania :</b> vrai ou faux ? ${q[1]}</p><div class="seg"><button type="button">Vrai</button><button type="button">Faux</button></div><p class="rep" aria-live="polite"></p></div></div>`);
+  const el = h(`<div class="dial"><div class="av" aria-hidden="true">N</div><div class="bul"><p><b>Naelys :</b> vrai ou faux ? ${q[1]}</p><div class="seg"><button type="button">Vrai</button><button type="button">Faux</button></div><p class="rep" aria-live="polite"></p></div></div>`);
   $$('button', el).forEach((b, k) => b.addEventListener('click', () => {
     const ok = (k === 0) === q[2], r = $('.rep', el);
     $$('button', el).forEach(x => x.disabled = true); b.setAttribute('aria-pressed', 'true');
@@ -247,7 +247,7 @@ A.telecharger = async (nom, data, fb) => {
    etape : étape de la leçon où la carte apparaît · v : [id, titre, chaîne, durée] · d : [intitulé, valeur, unité, tolérance] */
 const XL = {
 'm-bilan': {niv: 1, n: 1, etape: 2, t: 'Construire le bilan avec SOMME', min: 15,
-  obj: 'Additionnez automatiquement l\'actif et le passif du bilan de Vania, passez les montants en euros et vérifiez que le bilan est équilibré.',
+  obj: 'Additionnez automatiquement l\'actif et le passif du bilan de Naelys, passez les montants en euros et vérifiez que le bilan est équilibré.',
   comp: ['SOMME', 'Alt + =', 'Format monétaire'],
   v: [['BxuQN_oO0VA', 'Tu connais la fonction SOMME ?', 'La minute Excel', '3:22'], ['97wRm52wVxQ', 'Appliquer le format monétaire', 'Ben Info', '0:27']],
   d: [['Total de l\'actif (B11)', 23300, '€'], ['Capitaux propres (E7)', 13800, '€']]},
@@ -267,7 +267,7 @@ const XL = {
   v: [['tmqjEkZy76Y', 'Tu connais la fonction NB.SI ?', 'La minute Excel', '2:35'], ['HlPYn97pDn8', 'Trier et filtrer des données', 'tutosurexcel', '1:11']],
   d: [['Comptes de classe 6 (charges)', 11, ''], ['Comptes de classe 4 (tiers)', 9, '']]},
 'm-journal': {niv: 2, n: 5, etape: 0, t: 'Construire la balance avec SOMME.SI', min: 20,
-  obj: 'Transformez le journal de janvier de l\'atelier de Vania en balance : total débit, total crédit et solde de chaque compte, calculés automatiquement.',
+  obj: 'Transformez le journal de janvier de l\'atelier de Naelys en balance : total débit, total crédit et solde de chaque compte, calculés automatiquement.',
   comp: ['SOMME.SI', 'MAX', 'Plages figées $', 'Tableau croisé dynamique'],
   v: [['SqJmG4c1bLY', 'Tu connais la fonction SOMME.SI ?', 'La minute Excel', '2:35'], ['E8tizMO74HU', 'Le tableau croisé dynamique', 'Alphorm', '2:28']],
   d: [['Solde du compte 512 Banque', 37550, '€'], ['Total des débits du journal', 127850, '€']]},
@@ -307,7 +307,7 @@ const XL = {
   v: [['9gs1AKmmym0', 'Tu connais la fonction VPM ?', 'La minute Excel', '2:18'], ['z1xA-TGQcXI', 'Tu connais la fonction CUMUL.INTER ?', 'La minute Excel', '3:12']],
   d: [['Mensualité, au centime (B7)', 920.83, '€'], ['Intérêts de la première année (B8)', 1832.23, '€', .02]]},
 'm-sig': {niv: 4, n: 13, etape: 1, t: 'Les soldes intermédiaires de gestion en cascade', min: 20,
-  obj: 'À partir du compte de résultat 2026 de l\'atelier de Vania, calculez les soldes intermédiaires de gestion et la capacité d\'autofinancement, rapportez-les au chiffre d\'affaires et montrez-les dans un graphique en cascade.',
+  obj: 'À partir du compte de résultat 2026 de l\'atelier de Naelys, calculez les soldes intermédiaires de gestion et la capacité d\'autofinancement, rapportez-les au chiffre d\'affaires et montrez-les dans un graphique en cascade.',
   comp: ['Formules en cascade', 'Pourcentages', 'Graphique en cascade'],
   v: [['PXY8LHGtY2k', 'Le graphique en cascade', 'Excel Exercice', '2:59'], ['I4TgcWe0UII', 'Créer un graphique en cascade', 'WayToLearnX', '1:34']],
   d: [['Excédent brut d\'exploitation', 44000, '€'], ['Capacité d\'autofinancement', 35500, '€']]},
@@ -419,7 +419,7 @@ A.bulletin = el => {
       <div class="act"><button type="button" class="btn sec" data-d="-1">Précédent</button><button type="button" class="btn" data-d="1">Suivant</button><button type="button" class="lien" data-tout>Tout voir</button></div></div>
     <div class="bp-papier"><div class="bp-titre">BULLETIN DE PAIE · novembre 2026</div>
     ${ZONES.map((Z, i) => `<section class="bp-z" data-i="${i}" tabindex="0" aria-label="Bloc ${i + 1} : ${esc(Z.t)}"><span class="bp-num">${i + 1}</span><div class="bp-in">${Z.z}</div></section>
-      <div class="bp-exp" data-i="${i}" hidden><div class="dial"><div class="av" aria-hidden="true">V</div><div class="bul"><p><b>${i + 1}. ${Z.t}</b></p>${Z.e.map(t => `<p>${t}</p>`).join('')}<p class="bp-retenir">${Z.v}</p></div></div></div>`).join('')}
+      <div class="bp-exp" data-i="${i}" hidden><div class="dial"><div class="av" aria-hidden="true">N</div><div class="bul"><p><b>${i + 1}. ${Z.t}</b></p>${Z.e.map(t => `<p>${t}</p>`).join('')}<p class="bp-retenir">${Z.v}</p></div></div></div>`).join('')}
     </div>
     <p class="bp-note">Bulletin fictif. Taux arrondis et indicatifs (2026) : pour apprendre à lire une fiche de paie, pas pour calculer une vraie paie.</p></div>`;
   let cur = -1, tout = false;
@@ -554,7 +554,7 @@ function tableau() {
       <div class="act" style="margin-top:14px"><span style="font-size:.88rem;color:var(--muted)">Objectif quotidien :</span><div class="seg" id="but">${[20, 30, 50].map(b => `<button type="button" data-b="${b}" aria-pressed="${S.but === b}">${b} XP</button>`).join('')}</div></div></div>
     <div class="verre bloc"><h2>Progression par niveau</h2>${NIVEAUX.map(N => { const M = MODULES.filter(m => m.niv === N.n), a = sum(M, faits), t = sum(M, m => m.ex.length); return `<div class="lig"><span>${N.t}</span><div class="jauge"><i style="width:${100 * a / t}%"></i></div><span>${Math.round(100 * a / t)} %</span></div>`; }).join('')}
       <h2 style="margin-top:18px">Statistiques détaillées</h2>
-      <div class="lig" style="grid-template-columns:1fr auto"><span>Questions de Vania répondues</span><span>${Object.keys(S.qv).length}</span></div>
+      <div class="lig" style="grid-template-columns:1fr auto"><span>Questions de Naelys répondues</span><span>${Object.keys(S.qv).length}</span></div>
       <div class="lig" style="grid-template-columns:1fr auto"><span>Meilleure série à l'entraînement</span><span>${Math.max(0, ...Object.values(S.best))}</span></div>
       <div class="lig" style="grid-template-columns:1fr auto"><span>Cartes mémoire maîtrisées</span><span>${maitrisees()} / ${LEXIQUE.length + PCG.length}</span></div>
       <div class="lig" style="grid-template-columns:1fr auto"><span>Examens blancs réussis</span><span>${Object.values(S.exam).filter(e => e.ok).length} / 4</span></div>

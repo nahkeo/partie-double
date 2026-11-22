@@ -97,7 +97,7 @@ const MODULES = [
 <p>Le <strong>compte de résultat</strong> répond à « l'activité a-t-elle créé de la richesse ? ». C'est un film : il raconte toute la période, le plus souvent douze mois.</p>
 <h2>Ressources et emplois</h2>
 <p>Tout l'argent d'une entreprise vient de quelque part : c'est une <span class="c">ressource</span>. Et il est utilisé à quelque chose : c'est un <span class="d">emploi</span>. On ne peut pas employer de l'argent qu'on n'a pas reçu, donc <strong>le total des emplois est toujours égal au total des ressources</strong>.</p>
-<p>Vania ouvre un atelier de luminaires, avec un apport de 10 000 € et 5 000 € prêtés par la banque : voilà 15 000 € de ressources. L'atelier achète une machine à 4 000 € et 2 000 € de marchandises ; il reste 9 000 € sur le compte. Machine, marchandises et argent en banque sont ses emplois : 4 000 + 2 000 + 9 000 = 15 000 €.</p>
+<p>Naelys ouvre un atelier de luminaires, avec un apport de 10 000 € et 5 000 € prêtés par la banque : voilà 15 000 € de ressources. L'atelier achète une machine à 4 000 € et 2 000 € de marchandises ; il reste 9 000 € sur le compte. Machine, marchandises et argent en banque sont ses emplois : 4 000 + 2 000 + 9 000 = 15 000 €.</p>
 ${R('<p style="margin:0">Une ressource dit <em>d\'où vient</em> l\'argent, un emploi dit <em>où il est allé</em>. Les deux totaux sont égaux, toujours. Toute la comptabilité découle de cette égalité.</p>')}`,
  ex: [
   {t: 'qcm', q: 'Lequel de ces documents est une « photo » de l\'entreprise à une date donnée ?', o: ['Le compte de résultat', 'Le bilan', 'Le relevé bancaire', 'Le journal'], r: 1, e: 'Le bilan décrit le patrimoine à un instant précis. Le compte de résultat, lui, couvre une période.'},
@@ -121,7 +121,7 @@ ${R('<p style="margin:0">Une ressource dit <em>d\'où vient</em> l\'argent, un e
 <li><strong>Capitaux propres</strong> : ce qui appartient aux associés. Le capital apporté, les réserves (bénéfices passés conservés) et le résultat de l'exercice.</li>
 <li><strong>Dettes</strong> : ce que l'entreprise doit. Emprunts bancaires, fournisseurs, dettes fiscales (TVA, impôts) et sociales (salaires, cotisations).</li>
 </ul>
-<h2>Le bilan de Vania</h2>
+<h2>Le bilan de Naelys</h2>
 <div class="scroll"><table class="tb"><thead><tr><th>Actif</th><th class="m">€</th><th>Passif</th><th class="m">€</th></tr></thead>
 <tbody><tr><td>Machine</td><td class="m">4 000</td><td>Capital</td><td class="m">10 000</td></tr>
 <tr><td>Stock de marchandises</td><td class="m">2 000</td><td>Emprunt bancaire</td><td class="m">5 000</td></tr>
@@ -177,10 +177,10 @@ ${R('<p style="margin:0">Le bilan dit <em>où en est</em> l\'entreprise. Le comp
 <tr><td>Passif (capital, emprunts, fournisseurs)</td><td><span class="pill C">Crédit</span></td><td><span class="pill D">Débit</span></td></tr>
 <tr><td>Produits (ventes, prestations)</td><td><span class="pill C">Crédit</span></td><td><span class="pill D">Débit</span></td></tr></tbody></table></div>
 <p>Dans toute écriture, <strong>le total des débits est égal au total des crédits</strong>. Si ce n'est pas le cas, l'écriture est fausse.</p>
-<h2>Deux opérations de Vania</h2>
+<h2>Deux opérations de Naelys</h2>
 <p>Les associés apportent 10 000 € sur le compte bancaire. La banque (actif) augmente : débit. Le capital (passif) augmente : crédit.</p>
 ${J([['512', 10000, 0], ['101', 0, 10000]], 'Apport en capital')}
-<p>Vania achète ensuite une machine 4 000 €, payée par virement. La machine (actif) augmente : débit. La banque (actif) diminue : crédit.</p>
+<p>Naelys achète ensuite une machine 4 000 €, payée par virement. La machine (actif) augmente : débit. La banque (actif) diminue : crédit.</p>
 ${J([['2154', 4000, 0], ['512', 0, 4000]], 'Achat de la machine')}
 <p>Voici les comptes après ces deux écritures :</p>
 <div class="cols">${T('512 Banque', [['Apport', 10000]], [['Machine', 4000]])}${T('101 Capital', [], [['Apport', 10000]])}${T('2154 Matériel industriel', [['Machine', 4000]], [])}</div>
@@ -352,7 +352,7 @@ ${R('<p style="margin:0">Un règlement ne crée ni charge ni produit : il solde 
 ${W('paie')}
 <p style="font-size:.85rem;color:var(--muted)">Les taux sont arrondis pour l'exemple. Les vrais taux varient selon le statut, le niveau de salaire et les allègements.</p>
 <h2>Lire une fiche de paie</h2>
-<p>Beaucoup de salariés regardent seulement la dernière ligne. Pourtant, une fiche de paie se lit en <strong>8 blocs</strong>, toujours dans le même ordre, et chacun répond à une question simple. Suivez la visite guidée : Vania vous explique chaque bloc du bulletin de Sami, monteur chez Atelier Lumen.</p>
+<p>Beaucoup de salariés regardent seulement la dernière ligne. Pourtant, une fiche de paie se lit en <strong>8 blocs</strong>, toujours dans le même ordre, et chacun répond à une question simple. Suivez la visite guidée : Naelys vous explique chaque bloc du bulletin de Sami, monteur chez Atelier Lumen.</p>
 ${W('bulletin')}
 ${R('<p style="margin:0">Brut − cotisations salariales = <strong>net à payer avant impôt</strong>. Moins le prélèvement à la source = <strong>net à payer</strong>, ce qui arrive sur le compte. Côté employeur : brut + cotisations patronales − allègements = <strong>coût total</strong>.</p>')}
 <h2>Les écritures</h2>

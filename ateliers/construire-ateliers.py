@@ -77,12 +77,12 @@ def largeurs(ws, L):
         ws.column_dimensions[col].width = w
 
 
-# ─────────────── Atelier 1 : le bilan de l'atelier de Vania ───────────────
+# ─────────────── Atelier 1 : le bilan de l'atelier de Naelys ───────────────
 def atelier1(corrige):
     wb = Workbook()
     consignes(wb, 'Atelier 1 · Construire le bilan avec SOMME',
               'Additionner automatiquement l\'actif et le passif du bilan, présenter les montants en euros et vérifier que le bilan est équilibré.',
-              ['Ouvrez la feuille « Exercice ». Les montants du bilan de l\'atelier de Vania sont déjà saisis.',
+              ['Ouvrez la feuille « Exercice ». Les montants du bilan de l\'atelier de Naelys sont déjà saisis.',
                'En B11, calculez le total de l\'actif avec la fonction SOMME : =SOMME(B5:B10).',
                'En E7, calculez le sous-total des capitaux propres (capital + résultat) avec SOMME.',
                'En E11, calculez le total du passif.',
@@ -91,7 +91,7 @@ def atelier1(corrige):
               ['Total de l\'actif (cellule B11)', 'Capitaux propres (cellule E7)'],
               'Le raccourci Alt + = insère automatiquement une SOMME sur les cellules du dessus.')
     ws = wb.create_sheet('Exercice')
-    titre(ws, 'Bilan de l\'atelier de Vania au 31 décembre', 'Montants en euros')
+    titre(ws, 'Bilan de l\'atelier de Naelys au 31 décembre', 'Montants en euros')
     entete(ws, 4, ['Actif', 'Montant', '', 'Passif', 'Montant'])
     actif = [('Logiciel', 1200), ('Mobilier', 2500), ('Machine', 8000), ('Stock de marchandises', 3400), ('Créances clients', 1900), ('Banque', 6300)]
     passif = [('Capital', 12000), ('Résultat de l\'exercice', 1800), ('Capitaux propres', None), ('Emprunt bancaire', 6500), ('Fournisseurs', 2300), ('Dettes fiscales', 700)]
@@ -134,7 +134,7 @@ def atelier2(corrige):
               ['Résultat de l\'exercice (cellule B17)', 'Part des salaires dans le chiffre d\'affaires, en % avec une décimale (cellule C11)'],
               'Dans la barre de formule, cliquez sur B5 puis appuyez sur F4 : Excel ajoute les $ pour vous.')
     ws = wb.create_sheet('Exercice')
-    titre(ws, 'Compte de résultat simplifié de l\'atelier de Vania', 'Exercice de 12 mois, montants hors taxes')
+    titre(ws, 'Compte de résultat simplifié de l\'atelier de Naelys', 'Exercice de 12 mois, montants hors taxes')
     entete(ws, 4, ['Produits', 'Montant', ''])
     case(ws['A5'], 'Ventes de luminaires (chiffre d\'affaires)')
     case(ws['B5'], 85000, euro=corrige)
@@ -181,7 +181,7 @@ def atelier3(corrige):
               ['Numéro de l\'écriture en erreur', 'Montant de l\'écart, en valeur positive'],
               'Les guillemets entourent un texte dans une formule : "OK". Les nombres s\'écrivent sans guillemets.')
     ws = wb.create_sheet('Exercice')
-    titre(ws, 'Journal de janvier de l\'atelier de Vania', 'Une écriture contient une erreur de saisie : à vous de la trouver avec une formule')
+    titre(ws, 'Journal de janvier de l\'atelier de Naelys', 'Une écriture contient une erreur de saisie : à vous de la trouver avec une formule')
     entete(ws, 3, ['N°', 'Date', 'Compte', 'Libellé', 'Débit', 'Crédit'])
     lignes = {}
     for i, (n, d, c, l, de, cr) in enumerate(JOURNAL):
@@ -312,7 +312,7 @@ JOURNAL_JANV = [
 def atelier5(corrige):
     wb = Workbook()
     consignes_i(wb, 'Atelier 5 · Construire la balance avec SOMME.SI',
-                'Transformer le journal de janvier de l\'atelier de Vania en balance : total débit, total crédit et solde de chaque compte, calculés automatiquement.',
+                'Transformer le journal de janvier de l\'atelier de Naelys en balance : total débit, total crédit et solde de chaque compte, calculés automatiquement.',
                 ['Ouvrez la feuille « Exercice ». À gauche, le journal (28 lignes). À droite, la balance avec la liste des comptes.',
                  'En J5, calculez le total au débit du compte écrit en I5 : =SOMME.SI($B$5:$B$32;I5;$D$5:$D$32). Les $ figent les plages du journal.',
                  'En K5, même logique pour le crédit, avec la colonne E. Recopiez J5:K5 jusqu\'à la dernière ligne de la balance.',
@@ -322,7 +322,7 @@ def atelier5(corrige):
                 ['Solde du compte 512 Banque', 'Total des débits du journal'],
                 'SOMME.SI(plage_critère ; critère ; plage_à_additionner) : « additionne les montants des lignes dont le compte est égal à… ».')
     ws = wb.create_sheet('Exercice')
-    titre(ws, 'Journal et balance de janvier', 'Atelier de Vania · montants en euros')
+    titre(ws, 'Journal et balance de janvier', 'Atelier de Naelys · montants en euros')
     entete(ws, 4, ['Date', 'Compte', 'Libellé', 'Débit', 'Crédit'])
     n = len(JOURNAL_JANV)
     for i, (d, c, l, de, cr) in enumerate(JOURNAL_JANV):
@@ -383,7 +383,7 @@ def atelier6(corrige):
                 ['TVA à décaisser (J7)', 'Total TTC des ventes (J9)'],
                 'Sans ARRONDI, Excel garde toutes les décimales (5,5 % de 960,40 = 52,822). La TVA d\'une facture s\'arrondit au centime.')
     ws = wb.create_sheet('Exercice')
-    titre(ws, 'Factures du mois et déclaration de TVA', 'Atelier de Vania · montants en euros')
+    titre(ws, 'Factures du mois et déclaration de TVA', 'Atelier de Naelys · montants en euros')
     entete(ws, 4, ['N°', 'Type', 'Objet', 'Montant HT', 'Taux', 'TVA', 'TTC'])
     for i, (n_, t, o, ht, tx) in enumerate(FACTURES):
         r = 5 + i
@@ -435,7 +435,7 @@ def atelier7(corrige):
                 ['Solde bancaire corrigé (C21 ou H21)', 'Nombre total de lignes « À rapprocher » (les deux côtés)'],
                 'NB.SI(plage ; valeur) compte combien de fois la valeur apparaît. Plus de 0 : l\'opération existe de l\'autre côté.')
     ws = wb.create_sheet('Exercice')
-    titre(ws, 'Rapprochement bancaire de mars', 'Atelier de Vania · solde initial identique des deux côtés : 5 000,00 €')
+    titre(ws, 'Rapprochement bancaire de mars', 'Atelier de Naelys · solde initial identique des deux côtés : 5 000,00 €')
     entete(ws, 4, ['Date', 'Compte 512 (comptabilité)', 'Montant', 'Pointage'])
     for j, t in enumerate(['Date', 'Relevé bancaire', 'Montant', 'Pointage']):
         c = ws.cell(row=4, column=6 + j, value=t)
@@ -498,7 +498,7 @@ def atelier8(corrige):
                 ['Total des nets à payer (H11)', 'Coût total employeur (J13)'],
                 'Les taux sont simplifiés pour l\'exercice. Dans une vraie paie, ils dépendent du salaire, des plafonds et des allègements.')
     ws = wb.create_sheet('Exercice')
-    titre(ws, 'Salaires de mars', 'Atelier de Vania · taux simplifiés pour l\'exercice')
+    titre(ws, 'Salaires de mars', 'Atelier de Naelys · taux simplifiés pour l\'exercice')
     entete(ws, 4, ['Salarié', 'Statut', 'Brut', 'Taux PAS', 'Taux salarial', 'Cotis. salariales', 'Prélèvement', 'Net à payer', 'Taux patronal', 'Cotis. patronales'])
     for j, t in enumerate(['Statut', 'Taux salarial', 'Taux patronal']):
         c = ws.cell(row=4, column=12 + j, value=t)
@@ -585,7 +585,7 @@ def atelier9(corrige):
                 ['Total des dotations 2026 (G11)', 'Valeur nette comptable de la machine de découpe laser (H6)'],
                 'JOURS360 compte 30 jours par mois, comme le veut l\'usage pour le prorata d\'amortissement. Une mise en service le 15 février donne 316 jours.')
     ws = wb.create_sheet('Exercice')
-    titre(ws, 'Dotations aux amortissements 2026', 'Atelier de Vania · amortissement linéaire, prorata temporis')
+    titre(ws, 'Dotations aux amortissements 2026', 'Atelier de Naelys · amortissement linéaire, prorata temporis')
     cloture(ws)
     entete(ws, 5, ['Immobilisation', 'Mise en service', 'Valeur HT', 'Durée (ans)', 'Annuité', 'Jours en 2026', 'Dotation 2026', 'VNC au 31/12'])
     total = 0
@@ -635,7 +635,7 @@ def atelier10(corrige):
                 ['Total des charges constatées d\'avance (H12)', 'Total des charges de l\'exercice 2026 (I12)'],
                 'Si la colonne F affiche un nombre comme 46295, c\'est une date : appliquez le format Date courte (Accueil > Nombre).')
     ws = wb.create_sheet('Exercice')
-    titre(ws, 'Charges constatées d\'avance au 31 décembre 2026', 'Atelier de Vania · montants hors taxes')
+    titre(ws, 'Charges constatées d\'avance au 31 décembre 2026', 'Atelier de Naelys · montants hors taxes')
     cloture(ws)
     entete(ws, 5, ['Facture', 'Compte', 'Début de période', 'Durée (mois)', 'Montant HT', 'Fin de période', 'Mois sur 2027', 'Charge constatée d\'avance', 'Charge 2026'])
     tot_cca = 0
@@ -683,7 +683,7 @@ def atelier11(corrige):
                 ['Valeur du stock final (G10)', 'Coût total des sorties (I11)'],
                 'Le coût moyen ne change qu\'à une entrée : une sortie retire des unités au coût moyen du moment, sans le modifier.')
     ws = wb.create_sheet('Exercice')
-    titre(ws, 'Fiche de stock · modules LED, mars', 'Atelier de Vania · coût moyen unitaire pondéré après chaque entrée')
+    titre(ws, 'Fiche de stock · modules LED, mars', 'Atelier de Naelys · coût moyen unitaire pondéré après chaque entrée')
     entete(ws, 5, ['Date', 'Opération', 'Entrée qté', 'Entrée PU', 'Sortie qté', 'Stock qté', 'Stock valeur', 'Coût moyen', 'Coût de la sortie'])
     q, v = STOCK_INIT[0], STOCK_INIT[0] * STOCK_INIT[1]
     case(ws['A6'], '01/03'); case(ws['B6'], 'Stock initial')
@@ -732,7 +732,7 @@ def atelier12(corrige):
                 ['Mensualité, au centime (B7)', 'Intérêts de la première année (B8)'],
                 'VPM, CUMUL.INTER : les fonctions financières d\'Excel comptent en « flux ». Ce que vous payez est négatif, d\'où les signes moins.')
     ws = wb.create_sheet('Exercice')
-    titre(ws, 'Emprunt bancaire de l\'atelier de Vania', 'Remboursement par mensualités constantes')
+    titre(ws, 'Emprunt bancaire de l\'atelier de Naelys', 'Remboursement par mensualités constantes')
     for r, (l, v, fmt) in enumerate([('Capital emprunté', C, EURO), ('Taux annuel', t, '0.00%'), ('Nombre de mensualités', n, '0')], start=3):
         case(ws.cell(row=r, column=1), l, gras=True); x = case(ws.cell(row=r, column=2), v); x.number_format = fmt
     case(ws['A7'], 'Mensualité', gras=True); case(ws['B7'], '=PMT(B4/12,B5,-B3)' if corrige else None, a_remplir=True, euro=True, gras=True)
@@ -782,7 +782,7 @@ CR = [('Ventes de marchandises', 180000), ('Coût d\'achat des marchandises vend
 def atelier13(corrige):
     wb = Workbook()
     consignes_c(wb, 'Atelier 13 · Les soldes intermédiaires de gestion en cascade',
-                'À partir du compte de résultat 2026 de l\'atelier de Vania, calculer les soldes intermédiaires de gestion et la capacité d\'autofinancement, les rapporter au chiffre d\'affaires et les montrer dans un graphique en cascade.',
+                'À partir du compte de résultat 2026 de l\'atelier de Naelys, calculer les soldes intermédiaires de gestion et la capacité d\'autofinancement, les rapporter au chiffre d\'affaires et les montrer dans un graphique en cascade.',
                 ['Ouvrez la feuille « Exercice ». Les postes du compte de résultat sont en B5:B14 ; le tableau des soldes est à droite.',
                  'Calculez chaque solde avec les cellules de gauche : marge commerciale =B5-B6, valeur ajoutée = marge + B7 - B8, excédent brut d\'exploitation = valeur ajoutée - B9 - B10, et ainsi de suite.',
                  'Résultat d\'exploitation = EBE - dotations + reprises ; résultat courant = résultat d\'exploitation + résultat financier ; résultat net = résultat courant - impôt.',
@@ -792,7 +792,7 @@ def atelier13(corrige):
                 ['Excédent brut d\'exploitation', 'Capacité d\'autofinancement'],
                 'Un solde négatif n\'est pas une erreur de formule : un EBE négatif signale un métier qui perd de l\'argent avant même ses amortissements.')
     ws = wb.create_sheet('Exercice')
-    titre(ws, 'Compte de résultat 2026 et soldes intermédiaires de gestion', 'Atelier de Vania · montants en euros')
+    titre(ws, 'Compte de résultat 2026 et soldes intermédiaires de gestion', 'Atelier de Naelys · montants en euros')
     entete(ws, 4, ['Poste du compte de résultat', 'Montant'])
     for i, (l, v) in enumerate(CR):
         case(ws.cell(row=5 + i, column=1), l); case(ws.cell(row=5 + i, column=2), v, euro=True)
@@ -848,7 +848,7 @@ def atelier14(corrige):
                 ['Trésorerie nette 2026', 'Délai clients 2026, en jours'],
                 'SIERREUR(formule ; valeur si erreur) : si la formule renvoie #DIV/0!, Excel affiche votre texte à la place.')
     ws = wb.create_sheet('Exercice')
-    titre(ws, 'Analyse financière de l\'atelier de Vania', 'Bilan fonctionnel simplifié · montants en euros')
+    titre(ws, 'Analyse financière de l\'atelier de Naelys', 'Bilan fonctionnel simplifié · montants en euros')
     entete(ws, 4, ['Donnée', '2025', '2026'])
     for i, (l, a, b) in enumerate(BILAN_F):
         r = 5 + i
@@ -897,7 +897,7 @@ def atelier15(corrige):
                 ['Impôt sur les sociétés dû (B15)', 'Dotation à la réserve légale (B20)'],
                 'MIN renvoie la plus petite valeur, MAX la plus grande : MAX(0;…) empêche un montant négatif quand la réserve a déjà atteint son plafond.')
     ws = wb.create_sheet('Exercice')
-    titre(ws, 'Clôture 2026 : impôt et affectation', 'Atelier de Vania SAS · taux 2026 : 15 % jusqu\'à 42 500 € pour les PME éligibles, 25 % au-delà')
+    titre(ws, 'Clôture 2026 : impôt et affectation', 'Atelier de Naelys SAS · taux 2026 : 15 % jusqu\'à 42 500 € pour les PME éligibles, 25 % au-delà')
     lignes = [(4, 'Résultat comptable avant impôt', 118000, EURO, False), (5, 'Réintégration : amendes et pénalités', 1500, EURO, False),
               (6, 'Réintégration : amortissement excédentaire d\'un véhicule', 2300, EURO, False), (7, 'Déficit antérieur imputé', 20000, EURO, False),
               (11, 'Résultat fiscal', '=B4+B5+B6-B7', EURO, True), (12, 'PME éligible au taux réduit ? (Oui / Non)', 'Oui', '@', False),
