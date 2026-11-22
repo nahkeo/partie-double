@@ -343,14 +343,18 @@ ${R('<p style="margin:0">Un règlement ne crée ni charge ni produit : il solde 
   {t: 'qcm', q: 'Vous versez un acompte de 2 000 € à un fournisseur avant toute facture. Quel compte débiter ?', o: ['607 – Achats', '401 – Fournisseurs', '4091 – Avances et acomptes versés', '4191 – Avances et acomptes reçus'], r: 2, e: 'Tant que rien n\'est livré ni facturé, l\'acompte est une créance sur le fournisseur.'}
  ]},
 
-{id: 'm-paie', niv: 2, t: 'La paie', min: 11,
- chapo: 'Un bulletin de salaire, trois écritures : ce que gagne le salarié, ce que cela coûte en plus à l\'employeur, et les paiements.',
+{id: 'm-paie', niv: 2, t: 'La paie', min: 18,
+ chapo: 'Lire une fiche de paie bloc par bloc, puis la passer en comptabilité : ce que gagne le salarié, ce que cela coûte en plus à l\'employeur, et les paiements.',
  h: `
 <h2>Du brut au net</h2>
 <p>Le <strong>salaire brut</strong> est le montant convenu au contrat. On en retire les <strong>cotisations salariales</strong>, puis le <strong>prélèvement à la source</strong> de l'impôt sur le revenu. Reste le <strong>net à payer</strong>.</p>
 <p>L'employeur verse en plus des <strong>cotisations patronales</strong>. Le coût total d'un salarié est donc : brut + cotisations patronales.</p>
 ${W('paie')}
 <p style="font-size:.85rem;color:var(--muted)">Les taux sont arrondis pour l'exemple. Les vrais taux varient selon le statut, le niveau de salaire et les allègements.</p>
+<h2>Lire une fiche de paie</h2>
+<p>Beaucoup de salariés regardent seulement la dernière ligne. Pourtant, une fiche de paie se lit en <strong>8 blocs</strong>, toujours dans le même ordre, et chacun répond à une question simple. Suivez la visite guidée : Vania vous explique chaque bloc du bulletin de Sami, monteur chez Atelier Lumen.</p>
+${W('bulletin')}
+${R('<p style="margin:0">Brut − cotisations salariales = <strong>net à payer avant impôt</strong>. Moins le prélèvement à la source = <strong>net à payer</strong>, ce qui arrive sur le compte. Côté employeur : brut + cotisations patronales − allègements = <strong>coût total</strong>.</p>')}
 <h2>Les écritures</h2>
 <p>Brut de 3 000 €, cotisations salariales 660 €, prélèvement à la source 90 €.</p>
 ${J([['641', 3000, 0], ['431', 0, 660], ['4421', 0, 90], ['421', 0, 2250]], 'Bulletin de paie')}
@@ -365,7 +369,10 @@ ${R('<p style="margin:0">La charge de personnel, c\'est le brut (641) plus les c
   {t: 'ecriture', q: 'Enregistrez ce bulletin : brut 2 500 €, cotisations salariales 550 €, prélèvement à la source 75 €.', l: [['641', 2500, 0], ['431', 0, 550], ['4421', 0, 75], ['421', 0, 1875]], e: 'Le brut en charge, réparti entre trois dettes : organismes sociaux, État, salarié.'},
   {t: 'ecriture', q: 'Enregistrez les cotisations patronales de 1 000 €.', l: [['645', 1000, 0], ['431', 0, 1000]], e: 'Une charge supplémentaire, due à l\'URSSAF.'},
   {t: 'ecriture', q: 'Vous virez au salarié son net à payer de 1 875 €.', l: [['421', 1875, 0], ['512', 0, 1875]], e: 'La dette envers le salarié s\'éteint.'},
-  {t: 'qcm', q: 'Avant le versement du salaire, le compte 421 représente…', o: ['une créance sur le salarié', 'une dette envers le salarié', 'une charge', 'un produit'], r: 1, e: 'Le salaire est dû dès que le travail est fait : c\'est une dette, au passif, jusqu\'au virement.'}
+  {t: 'qcm', q: 'Avant le versement du salaire, le compte 421 représente…', o: ['une créance sur le salarié', 'une dette envers le salarié', 'une charge', 'un produit'], r: 1, e: 'Le salaire est dû dès que le travail est fait : c\'est une dette, au passif, jusqu\'au virement.'},
+  {t: 'qcm', q: 'Sur une fiche de paie, quelle ligne correspond à la somme qui arrive sur le compte bancaire du salarié ?', o: ['Le salaire brut', 'Le net imposable', 'Le net à payer avant impôt', 'Le net à payer'], r: 3, e: 'Le net à payer, en bas et encadré, est versé après le prélèvement à la source. Le net imposable sert seulement à calculer l\'impôt.'},
+  {t: 'tri', q: 'Qui paie cette cotisation ?', cats: ['Salarié et employeur', 'Employeur seulement'], items: [['Retraite de base (Sécurité sociale)', 0], ['Retraite complémentaire', 0], ['Assurance chômage', 1], ['Allocations familiales', 1], ['Accidents du travail', 1], ['CSG et CRDS', 0]], e: 'Depuis 2018, le salarié ne cotise plus à l\'assurance chômage. La CSG et la CRDS sont, elles, prélevées sur le salaire.'},
+  {t: 'qcm', q: 'Pourquoi le net imposable est-il plus élevé que le net à payer avant impôt ?', o: ['Parce qu\'il inclut les heures supplémentaires', 'Parce qu\'on y rajoute la CSG non déductible, la CRDS et la part employeur de la mutuelle', 'Parce qu\'il est calculé avant toutes les cotisations', 'Ce n\'est jamais le cas'], r: 1, e: 'Une partie de ce qui a été prélevé reste imposable : la CSG non déductible et la CRDS. La part de mutuelle payée par l\'employeur est aussi un avantage imposable.'}
  ]},
 
 /* ───────────── NIVEAU 3 ───────────── */

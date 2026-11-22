@@ -33,7 +33,7 @@ window.PD.PLUS = {
   v: ['comptabiliser une facture d\'achat écriture', 'comptabiliser une facture de vente écriture', 'rabais remise ristourne escompte comptabilité']},
 'm-banque': {q: [[0, 'Le règlement d\'un client augmente le chiffre d\'affaires.', false, 'Le produit a été enregistré à la facture. Le règlement solde seulement la créance.'], [1, 'Un chèque émis mais pas encore débité explique un écart entre le relevé et le compte 512.', true, 'C\'est un simple décalage de temps.']],
   v: ['rapprochement bancaire méthode exemple', 'état de rapprochement bancaire exercice corrigé', 'comptabiliser un règlement client fournisseur']},
-'m-paie': {q: [[0, 'Les cotisations patronales sont retenues sur le salaire du salarié.', false, 'Elles s\'ajoutent au brut et sont payées par l\'employeur.']],
+'m-paie': {q: [[0, 'Les cotisations patronales sont retenues sur le salaire du salarié.', false, 'Elles s\'ajoutent au brut et sont payées par l\'employeur.'], [1, 'Le net imposable est la somme versée sur le compte du salarié.', false, 'C\'est le net à payer, la dernière ligne encadrée. Le net imposable sert seulement à calculer le prélèvement à la source.']],
   v: ['comptabilisation de la paie écritures', 'salaire brut net coût employeur explication', 'lire un bulletin de paie']},
 'm-amortissements': {q: [[0, 'Un terrain s\'amortit sur vingt ans.', false, 'Un terrain ne s\'use pas : il ne s\'amortit pas.'], [1, 'Un bien mis en service le 1er juillet ne supporte que six mois de dotation la première année.', true, 'C\'est le prorata temporis.']],
   v: ['amortissement linéaire explication exemple', 'tableau d\'amortissement linéaire prorata temporis', 'immobilisation ou charge comment choisir']},
@@ -77,6 +77,7 @@ const YT = {
 'm-journal': [['6eXilKmmQYU', 'Le journal, le grand livre et la balance', '3:54'], ['izsXvuv1j90', 'Les écritures comptables. Initiation 6/6', '15:10'], ['RuzJc-a0qJ4', 'La vie d\'une écriture comptable', '10:51'], ['Xre0mFpQu0A', 'Enregistrement comptable : les questions à se poser', '10:10'], ['OnJ2dmGJ-Gg', 'Grand livre, balance, bilan et résultat en même temps', '45:00']],
 'm-tva': [['_RqkB2AI8Sc', 'La TVA', '6:57'], ['RyCKY5xygLg', 'TVA : comptabilisation de l\'écriture (1/2)', '4:30'], ['Vx-E8KQ8MjQ', 'TVA : comptabilisation de l\'écriture (2/2)', '5:55'], ['HvSckjR4Y6o', 'Exercice : calculer et comptabiliser la TVA', '15:00'], ['g0vvHzrP0u0', 'Cours complet sur la TVA (CA3, logiciel…)', '49:00']],
 'm-achats-ventes': [['oRoARqWXjXQ', 'Facture d\'achat : enregistrement comptable', '7:27'], ['5pyk3UVr7SU', 'Facture de vente : enregistrement comptable', '5:22'], ['2ieU7eDka04', 'L\'écriture comptable de vente', '6:27'], ['HZEnvHNP_j4', 'Exercice : achats, ventes, avoirs', '19:00'], ['gtvCoI5fGfM', 'Exercice : les opérations courantes', '18:08'], ['p3QAAuf0ZwI', 'Les emballages : écritures et exemples', '24:00']],
+'m-paie': [['oNqL3gtn3mY', 'Le bulletin de salaire, en dessin animé', 'Dessine-moi l\'éco', '3:20'], ['iYDXAUZOBuA', 'Fiche de paie : que signifient toutes ces lignes ?', 'Hellowork', '3:49'], ['AyV3H5xr0DY', 'Salaire brut, net et coût du travail', 'Draw my economy', '3:05']],
 'm-banque': [['q1r6opBtdtI', 'Tout sur le compte 512 Banque', '9:35'], ['Qyp6IvMfVRs', 'Les avances et acomptes versés et reçus', '27:00']],
 'm-amortissements': [['HioNEdYu2T4', 'Qu\'est-ce qu\'une immobilisation ?', '6:47'], ['Vu5b_voQGXs', 'Enregistrer l\'acquisition d\'une immobilisation', '12:56'], ['86KFWvZr9KI', 'Enregistrer une écriture d\'immobilisation', '9:44'], ['racliCbW6Mw', 'Les amortissements : introduction', '20:00'], ['GrMGQkjgWlU', 'Exercice : acquisition d\'une immobilisation', '18:00'], ['f7IYK6QotPI', 'Les immobilisations financières', '7:06'], ['RZRIe7gdHRo', 'Coût d\'acquisition des immobilisations corporelles (DCG)', '40:37']],
 'm-depreciations': [['-UhxzORL760', 'Les dépréciations en 8 minutes', '8:09'], ['4puj8mEMt1I', 'Exercice : les provisions', '15:00']],
@@ -354,6 +355,106 @@ const bouton = (f, txt, cls, cache) => CHEZ_NOUS
 const xlDe = niv => Object.keys(XL).filter(k => niv === 'syn' ? XL[k].syn : !XL[k].syn && XL[k].niv === niv);
 const xlFaits = niv => (niv ? xlDe(niv) : Object.keys(XL)).filter(k => S.xl[k]).length;
 const xlTotal = niv => xlDe(niv).length;
+/* ══════════ FICHE DE PAIE COMMENTÉE : visite guidée en 8 blocs ══════════
+   Bulletin fictif. Taux arrondis et indicatifs : pour apprendre à lire, pas pour calculer une vraie paie. */
+A.bulletin = el => {
+  const r2 = x => Math.round(x * 100) / 100;
+  const heures = 151.67, taux = 13.25, hs = 4, prime = 100;
+  const base = r2(heures * taux), hsup = r2(hs * taux * 1.25), brut = r2(base + hsup + prime);
+  const assietteCSG = r2(brut * .9825);
+  // [libellé, base, taux salarial, taux patronal, montant salarial forcé, montant patronal forcé]
+  const B = {
+    sante: [['Sécurité sociale maladie', brut, 0, 7], ['Complémentaire santé (mutuelle)', 'forfait', null, null, 30, 30], ['Accidents du travail', brut, 0, 1.8]],
+    retraite: [['Sécurité sociale plafonnée', brut, 6.9, 8.55], ['Sécurité sociale déplafonnée', brut, .4, 2.11], ['Complémentaire tranche 1', brut, 4.01, 6.01]],
+    autres: [['Famille', brut, 0, 3.45], ['Assurance chômage (et AGS)', brut, 0, 4.25], ['Autres contributions employeur', brut, 0, 1.6]],
+    csg: [['CSG déductible de l\'impôt', assietteCSG, 6.8, 0], ['CSG et CRDS non déductibles', assietteCSG, 2.9, 0]]
+  };
+  const ALLEGEMENT = 410, TAUX_PAS = 2, CP = [25, 3];
+  let sal = 0, pat = 0;
+  const ligne = ([l, b, ts, tp, ms, mp]) => {
+    const s = ms !== undefined ? ms : r2((typeof b === 'number' ? b : 0) * ts / 100), p = mp !== undefined ? mp : r2((typeof b === 'number' ? b : 0) * tp / 100);
+    sal += s; pat += p;
+    const t = v => v ? String(v).replace('.', ',') + ' %' : '';
+    return `<tr><td>${l}</td><td class="m">${typeof b === 'number' ? fmt(b) : b}</td><td class="m">${ts === null ? '' : t(ts)}</td><td class="m">${s ? fmt(s) : ''}</td><td class="m">${tp === null ? '' : t(tp)}</td><td class="m">${p ? fmt(p) : ''}</td></tr>`;
+  };
+  const bloc = k => B[k].map(ligne).join('');
+  const html = {sante: bloc('sante'), retraite: bloc('retraite'), autres: bloc('autres')};
+  pat -= ALLEGEMENT;
+  html.csg = bloc('csg');
+  sal = r2(sal); pat = r2(pat);
+  const netAvant = r2(brut - sal), csgND = r2(assietteCSG * .029), mutPat = 30;
+  const netSocial = r2(netAvant + mutPat), netImpo = r2(netAvant + csgND + mutPat), pas = r2(netImpo * TAUX_PAS / 100), net = r2(netAvant - pas);
+  const cout = r2(brut + pat);
+  const th = '<thead><tr><th>Rubrique</th><th class="m">Base</th><th class="m">Taux salarié</th><th class="m">Part salarié</th><th class="m">Taux employeur</th><th class="m">Part employeur</th></tr></thead>';
+
+  const ZONES = [
+    {t: 'Qui paie qui, et pour quelle période ?', z: `<div class="bp-2col"><div><b>Atelier Lumen SAS</b><br>12 rue des Verriers, 69003 Lyon<br>SIRET 000 000 000 00012 · APE 2740Z<br>Convention collective : métallurgie</div><div><b>Sami</b><br>Monteur-assembleur · niveau B, coefficient 7<br>Entré le 02/05/2024 · CDI, 35 h<br>Période : du 01/11/2026 au 30/11/2026</div></div>`,
+      e: ['En haut, l\'<b>employeur</b> : son nom, son adresse, son numéro <b>SIRET</b> (la carte d\'identité de l\'établissement) et son code <b>APE</b> (son activité).', 'La <b>convention collective</b> est importante : elle fixe les salaires minimum, les primes, les congés en plus, le préavis…', 'À droite, le <b>salarié</b> : son emploi et sa <b>classification</b>. Vérifiez qu\'elle correspond bien à votre poste : c\'est elle qui fixe votre salaire minimum.', 'Enfin, la <b>période de paie</b> et la date d\'entrée, qui sert à calculer l\'ancienneté.'],
+      v: 'Le réflexe : vérifiez votre classification et la convention collective. Une erreur ici peut vous coûter de l\'argent tous les mois.'},
+    {t: 'Le salaire brut : ce que prévoit votre contrat', z: `<table><thead><tr><th>Rubrique</th><th class="m">Base</th><th class="m">Taux</th><th class="m">Montant</th></tr></thead><tbody><tr><td>Salaire de base</td><td class="m">151,67 h</td><td class="m">${fmt(taux)} €</td><td class="m">${fmt(base)}</td></tr><tr><td>Heures supplémentaires à 25 %</td><td class="m">${hs} h</td><td class="m">${fmt(taux * 1.25)} €</td><td class="m">${fmt(hsup)}</td></tr><tr><td>Prime d\'assiduité</td><td class="m"></td><td class="m"></td><td class="m">${fmt(prime)}</td></tr><tr class="bp-tot"><td>Salaire brut</td><td></td><td></td><td class="m">${fmt(brut)}</td></tr></tbody></table>`,
+      e: ['<b>151,67 heures</b>, c\'est un mois à 35 heures : 35 h × 52 semaines ÷ 12 mois. Multipliées par le <b>taux horaire</b>, elles donnent le salaire de base.', 'Les <b>heures supplémentaires</b> sont payées plus cher : en général +25 % pour les 8 premières de la semaine, +50 % au-delà.', 'Viennent ensuite les <b>primes</b> et, s\'il y a lieu, les absences en moins.', 'Le total, c\'est le <b>salaire brut</b>. Tout le reste du bulletin part de ce chiffre.'],
+      v: 'Le brut n\'est pas ce que vous touchez : c\'est le point de départ. Comptez environ 22 % de moins pour arriver au net.'},
+    {t: 'Santé et accidents du travail', z: `<table>${th}<tbody>${html.sante}</tbody></table>`,
+      e: ['Ce bloc finance vos <b>remboursements de soins</b> : la Sécurité sociale (maladie, maternité, invalidité), payée ici par l\'employeur.', 'La <b>complémentaire santé</b>, c\'est la mutuelle d\'entreprise. L\'employeur en paie au moins la moitié.', 'Les <b>accidents du travail</b> sont entièrement à la charge de l\'employeur. Le taux dépend des risques du métier.'],
+      v: 'Chaque ligne a deux parts : celle du salarié (retenue sur le brut) et celle de l\'employeur (payée en plus).'},
+    {t: 'La retraite', z: `<table>${th}<tbody>${html.retraite}</tbody></table>`,
+      e: ['La retraite <b>de base</b> (Sécurité sociale) se paie en deux lignes : <b>plafonnée</b>, sur le salaire jusqu\'au plafond mensuel de la Sécurité sociale, et <b>déplafonnée</b>, sur tout le salaire.', 'La retraite <b>complémentaire</b> (Agirc-Arrco) se calcule par tranches. Sous le plafond, c\'est la tranche 1.', 'Ces cotisations ne sont pas perdues : elles vous donnent des <b>trimestres</b> et des <b>points</b> de retraite.'],
+      v: 'C\'est le plus gros bloc de cotisations du salarié : près de 11 % du brut.'},
+    {t: 'Famille, chômage, autres… et les allègements', z: `<table>${th}<tbody>${html.autres}<tr class="bp-alleg"><td>Allègement de cotisations</td><td></td><td></td><td></td><td></td><td class="m">−${fmt(ALLEGEMENT)}</td></tr></tbody></table>`,
+      e: ['Les <b>allocations familiales</b> et l\'<b>assurance chômage</b> sont payées uniquement par l\'employeur. Le salarié ne cotise plus au chômage depuis 2018.', 'Les <b>autres contributions</b> regroupent la formation professionnelle, l\'apprentissage, le logement, le dialogue social…', 'L\'<b>allègement</b> réduit les cotisations de l\'employeur sur les salaires modestes. Il ne change rien pour le salarié.'],
+      v: 'Les colonnes « employeur » ne réduisent pas votre salaire : elles s\'ajoutent au coût de votre emploi.'},
+    {t: 'CSG et CRDS : les contributions sociales', z: `<table>${th}<tbody>${html.csg}<tr class="bp-tot"><td>Total des cotisations et contributions</td><td></td><td></td><td class="m">${fmt(sal)}</td><td></td><td class="m">${fmt(pat)}</td></tr></tbody></table>`,
+      e: ['La <b>CSG</b> et la <b>CRDS</b> sont des impôts qui financent la protection sociale. Elles se calculent sur 98,25 % du brut.', 'Une partie de la CSG est <b>déductible</b> : elle ne sera pas soumise à l\'impôt sur le revenu.', 'L\'autre partie et la CRDS sont <b>non déductibles</b> : vous les payez, et elles restent pourtant imposables. On les retrouvera dans le net imposable.', 'La ligne <b>total</b> additionne toutes vos cotisations d\'un côté, celles de l\'employeur de l\'autre.'],
+      v: 'Brut − total de la part salarié = net à payer avant impôt.'},
+    {t: 'Les nets : quatre lignes, quatre usages', z: `<table><tbody><tr><td>Net à payer avant impôt sur le revenu</td><td class="m">${fmt(netAvant)}</td></tr><tr><td>Montant net social</td><td class="m">${fmt(netSocial)}</td></tr><tr><td>Net imposable</td><td class="m">${fmt(netImpo)}</td></tr><tr><td>Impôt sur le revenu prélevé à la source · taux ${TAUX_PAS} %</td><td class="m">−${fmt(pas)}</td></tr><tr class="bp-net"><td>NET À PAYER</td><td class="m">${fmt(net)} €</td></tr></tbody></table>`,
+      e: ['<b>Net à payer avant impôt</b> : le brut moins toutes vos cotisations.', '<b>Montant net social</b> : un chiffre unique à déclarer pour la prime d\'activité ou le RSA. Pas besoin de calculer, il est sur le bulletin.', '<b>Net imposable</b> : le net avant impôt, plus la CSG non déductible, la CRDS et la part de mutuelle payée par l\'employeur. C\'est la base de l\'impôt.', '<b>Prélèvement à la source</b> : le net imposable × votre taux, transmis par les impôts. Vous pouvez le modifier sur impots.gouv.fr.', '<b>Net à payer</b>, encadré : la somme qui arrive vraiment sur votre compte.'],
+      v: 'Ne confondez pas net imposable et net à payer : le premier sert à l\'impôt, le second à votre compte en banque.'},
+    {t: 'Le bas du bulletin : congés, coût total, cumuls', z: `<div class="bp-2col"><div><b>Congés payés</b> (jours ouvrables)<br>Acquis : ${CP[0]} · Pris : ${CP[1]} · Solde : ${CP[0] - CP[1]}<br><br><b>Payé le</b> 30/11/2026 par virement</div><div><b>Total versé par l\'employeur</b> : ${fmt(cout)} €<br>dont allègement de cotisations : ${fmt(ALLEGEMENT)} €<br><br><b>Cumuls depuis janvier</b> : brut, net imposable, heures…</div></div><p class="bp-mention">Dans votre intérêt et pour vous aider à faire valoir vos droits, conservez ce bulletin de paie sans limitation de durée. Rubrique dédiée sur service-public.fr.</p>`,
+      e: ['Le <b>compteur de congés</b> : jours acquis, pris et restants. Vérifiez-le avant de poser vos vacances.', 'Le <b>total versé par l\'employeur</b> : brut + cotisations patronales − allègements. C\'est ce que votre emploi coûte vraiment.', 'Les <b>cumuls</b> depuis janvier servent pour votre déclaration de revenus.', 'Et la mention à retenir : <b>conservez vos bulletins toute votre vie</b>. Ils prouvent vos droits à la retraite et au chômage.'],
+      v: `Ici, Sami touche ${fmt(net)} €, et son emploi coûte ${fmt(cout)} € à l\'atelier.`}
+  ];
+  const n = ZONES.length;
+  el.innerHTML = `<div class="bp">
+    <div class="bp-barre"><b>Visite guidée</b><span class="bp-etape" aria-live="polite"></span><div class="bp-pts">${ZONES.map((_, i) => `<button type="button" aria-label="Bloc ${i + 1}" data-i="${i}"></button>`).join('')}</div>
+      <div class="act"><button type="button" class="btn sec" data-d="-1">Précédent</button><button type="button" class="btn" data-d="1">Suivant</button><button type="button" class="lien" data-tout>Tout voir</button></div></div>
+    <div class="bp-papier"><div class="bp-titre">BULLETIN DE PAIE · novembre 2026</div>
+    ${ZONES.map((Z, i) => `<section class="bp-z" data-i="${i}" tabindex="0" aria-label="Bloc ${i + 1} : ${esc(Z.t)}"><span class="bp-num">${i + 1}</span><div class="bp-in">${Z.z}</div></section>
+      <div class="bp-exp" data-i="${i}" hidden><div class="dial"><div class="av" aria-hidden="true">V</div><div class="bul"><p><b>${i + 1}. ${Z.t}</b></p>${Z.e.map(t => `<p>${t}</p>`).join('')}<p class="bp-retenir">${Z.v}</p></div></div></div>`).join('')}
+    </div>
+    <p class="bp-note">Bulletin fictif. Taux arrondis et indicatifs (2026) : pour apprendre à lire une fiche de paie, pas pour calculer une vraie paie.</p></div>`;
+  let cur = -1, tout = false;
+  const montre = (i, scroll) => {
+    cur = Math.max(0, Math.min(n - 1, i)); tout = false;
+    $$('.bp-z', el).forEach((z, k) => { z.classList.toggle('on', k === cur); z.classList.toggle('off', k !== cur); });
+    $$('.bp-exp', el).forEach((x, k) => { x.hidden = k !== cur; });
+    $$('.bp-pts button', el).forEach((b, k) => { b.classList.toggle('on', k === cur); b.classList.toggle('vu', k < cur); });
+    $('.bp-etape', el).textContent = `Bloc ${cur + 1} sur ${n} · ${ZONES[cur].t}`;
+    $('[data-d="-1"]', el).disabled = cur === 0; $('[data-d="1"]', el).textContent = cur === n - 1 ? 'Terminer' : 'Suivant';
+    if (scroll) $$('.bp-z', el)[cur].scrollIntoView({behavior: 'smooth', block: 'center'});
+  };
+  const toutVoir = () => {
+    tout = true; cur = -1;
+    $$('.bp-z', el).forEach(z => z.classList.remove('on', 'off'));
+    $$('.bp-exp', el).forEach(x => { x.hidden = false; });
+    $$('.bp-pts button', el).forEach(b => { b.classList.remove('on'); b.classList.add('vu'); });
+    $('.bp-etape', el).textContent = 'Les 8 blocs et leurs explications';
+    $('[data-d="1"]', el).textContent = 'Recommencer'; $('[data-d="-1"]', el).disabled = true;
+  };
+  $$('[data-d]', el).forEach(b => b.addEventListener('click', () => {
+    const d = +b.dataset.d;
+    if (tout) { montre(0, true); return; }
+    if (d > 0 && cur === n - 1) { toutVoir(); if (!S.flags.bulletin) { S.flags.bulletin = 1; A.gain(10, 'bp', 'Fiche de paie lue en entier'); } return; }
+    montre(cur + d, true);
+  }));
+  $('[data-tout]', el).addEventListener('click', toutVoir);
+  $$('.bp-pts button', el).forEach(b => b.addEventListener('click', () => montre(+b.dataset.i, true)));
+  $$('.bp-z', el).forEach(z => {
+    const go = () => montre(+z.dataset.i, false);
+    z.addEventListener('click', go);
+    z.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
+  });
+  montre(0, false);
+};
 A.fichier = async (chemin, nom, fb) => {
   try {
     const r = await fetch(chemin); if (!r.ok) throw new Error(r.status);

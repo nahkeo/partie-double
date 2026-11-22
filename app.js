@@ -217,6 +217,7 @@ const WID = {
     };
     el.addEventListener('input', maj); maj();
   },
+  bulletin(el) { A.bulletin(el); },
   sig(el) {
     const F = [['vm', 'Ventes de marchandises', 500000], ['ca', 'Coût d\'achat des marchandises vendues', 300000], ['pr', 'Production vendue', 100000], ['ce', 'Consommations en provenance des tiers', 90000], ['it', 'Impôts et taxes', 10000], ['cp', 'Charges de personnel', 130000], ['do', 'Dotations aux amortissements', 25000], ['rf', 'Résultat financier', -5000], ['is', 'Impôt sur les bénéfices', 10000]];
     const ids = Object.fromEntries(F.map(x => [x[0], uid()]));
